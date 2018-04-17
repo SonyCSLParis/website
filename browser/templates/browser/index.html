@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'browser/style.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'penelope_site/static/common.css' %}" />
+
+{% block content %}
+{% for spec in component_specifications %}
+   <div>
+       <h1><a href="{% url 'bench:description' spec.id %}">{{spec.component_name}}</a></h1>
+       <p>{{ spec.description}}</p>
+       {% for request in spec.request_set.all %}
+           <div>
+               <p>{{ request }}</p>
+           </div>
+       {% endfor %}
+   </div>
+
+{% endfor %}
+{% endblock %}
+
+{% block pagination %}
+  {% if is_paginated %}
+      <div class="pagination">
+          <span class="page-links">
+              {% if page_obj.has_previous %}
+                  <a href="{{ request.path }}?page={{ page_obj.previous_page_number }}">previous</a>
+              {% endif %}
+              <span class="page-current">
+                  Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+              </span>
+              {% if page_obj.has_next %}
+                  <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">next</a>
+              {% endif %}
+          </span>
+      </div>
+  {% endif %}
+{% endblock %}
+
+
+{##}
+{#<div class="row">#}
+{#   {% for spec in component_specifications.paginator.page %}#}
+{#       <div class="col-lg-3 col-sm-6 col-xs-12">#}
+{#           <a href="{% url 'bench:description' spec.id %}">{{spec.component_name}}: {{ spec.description }}</a>#}
+{#       </div>#}
+{#       {% if forloop.counter|divisibleby:4 %}#}
+{#</div>#}
+{##}
+{#<div class="row">#}
+{#   {% endif %}#}
+{#   {% endfor %}#}
+{#</div>#}
+
+{##}
+{#{% if component_specifications %}#}
+{#    <ul>#}
+{#    {% for spec in component_specifications %}#}
+{#        <li><a href="{% url 'bench:description' spec.id %}">{{spec.component_name}}: {{ spec.description }}</a></li>#}
+{#    {% endfor %}#}
+{#    </ul>#}
+{#{% else %}#}
+{#    <p>No specifications available.</p>#}
+{#{% endif %}#}
+{##}

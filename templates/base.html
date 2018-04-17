@@ -1,0 +1,23 @@
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="../static/common.css" />
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+<body>
+    <div class="page-header">
+        <h1><a href="/">Penelope</a></h1>
+        {{ STATIC_URL }}
+    </div>
+
+    <div class="content container">
+        <div class="row">c
+            <div class="col-md-8">
+            {% block content %}
+            {% endblock %}
+            </div>
+        </div>
+    </div>
+    <div class="page-footer">
+           <h1><a href="https://www.odycceus.eu/">Developed as part of H2020 european funding.</a></h1>
+   </div>
+</body>
