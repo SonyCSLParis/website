@@ -1,5 +1,48 @@
 .page-header {
-    background-color: #ff9400;
-    margin-top: 0;
-    padding: 20px 20px 20px 40px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 50px;
+    text-align: center;
+    vertical-align: middle;
 }
+
+
+.page-footer {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 20px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.request {
+    border: 2px solid #d1ccd4;
+       border-radius: 7px;
+    margin-bottom: 4px;
+    display: inline-block;
+    min-width: 250px;
+    overflow:hidden;
+}
+
+.request-type {
+    border-right: 4px solid #d1ccd4;
+    min-width: 80px;
+    display: inline-block;
+    text-align: center;
+}
+
+.GET{
+    background-color: #42a0d7;
+}
+
+.POST{
+    background-color: #a96ad7;
+}
+
+.DELETE{
+    background-color: #d73650;
+}
+
+
+.request-name {
+    height: 20px;
+    display: inline-block;
+    }

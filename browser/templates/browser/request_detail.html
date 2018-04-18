@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'browser/detailed.css' %}" />
+
+    <div class="container">
+        <div class="request grid-container">
+           <div class="grid-item request-type {{ request.request_type }}">{{ request.request_type }}</div>
+           <div class="grid-item request-name">{{ request.request_name }}</div>
+   </div>
+
+   <p>{{ request.request_description|linebreaksbr}}</p>
+    
+   </div>
+
+{% endblock %}

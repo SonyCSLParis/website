@@ -22,6 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 import sys
 
+
 # taken from https://blog.milessteele.com/posts/2013-07-07-hiding-djangos-secret-key.html
 def find_or_create_secret_key():
     """
@@ -30,10 +31,10 @@ def find_or_create_secret_key():
     """
     SECRET_KEY_DIR = os.path.dirname(__file__)
     SECRET_KEY_FILEPATH = os.path.join(SECRET_KEY_DIR, 'secret_key.py')
-    sys.path.insert(1,SECRET_KEY_DIR)
+    sys.path.insert(1, SECRET_KEY_DIR)
 
     if os.path.isfile(SECRET_KEY_FILEPATH):
-        from secret_key import SECRET_KEY
+        from penelope_site.secret_key import SECRET_KEY
         return SECRET_KEY
     else:
         from django.utils.crypto import get_random_string
@@ -41,7 +42,7 @@ def find_or_create_secret_key():
         new_key = get_random_string(50, chars)
         with open(SECRET_KEY_FILEPATH, 'w') as f:
             f.write("# Django secret key\n# Do NOT check this into version control.\n\nSECRET_KEY = '%s'\n" % new_key)
-        from secret_key import SECRET_KEY
+        from penelope_site.secret_key import SECRET_KEY
         return SECRET_KEY
 
 # Make this unique, and don't share it with anybody.
@@ -145,6 +146,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIR = os.path.join(BASE_DIR, "static")
-
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static/"),
+    os.path.join(BASE_DIR, "browser/static")
+]
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates/'),)
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
+}
