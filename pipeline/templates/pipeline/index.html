@@ -11,16 +11,11 @@
         </form>
 
         <div class="row">
-            {% for spec in object_list %}
+            {% for pipeline in object_list %}
                 <div class="col-lg-4 col-sm-6 col-xs-12">
-                   <h1><a href="{% url 'browser:description' spec.pk %}">{{spec.component_name}}</a></h1>
-                   <p>{{ spec.description}}</p>
-                   {% for request in spec.request_set.all %}
-                       <div class="request grid-container">
-                           <div class="grid-item request-type {{ request.request_type }}">{{ request.request_type }}</div>
-                           <div class="grid-item request-name">{{ request.request_name }}</div>
-                       </div>
-                   {% endfor %}
+                   <h1><a href="{% url 'pipeline:pipeline' pipeline.pk %}">{{pipeline.name}}</a></h1>
+                   <p>{{ pipeline.description}}</p>
+
                </div>
             {% if forloop.counter|divisibleby:3 %}
         </div>

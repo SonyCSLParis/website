@@ -63,7 +63,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'browser.apps.BrowserConfig',
+    'browser',
+    'django_tables2',
+    'pipeline',
+    'prettyjson'
 ]
 
 MIDDLEWARE = [

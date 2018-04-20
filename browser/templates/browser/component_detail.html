@@ -12,11 +12,10 @@
        {% for request in object.request_set.all %}
            <div class="request grid-container">
                 <div class="grid-item request-type {{ request.request_type }}">
-                    <a href="{% url 'bench:request' request.pk %}">{{ request.request_type }}</a>
+                    <a href="{% url 'browser:request' request.pk %}">{{ request.request_type }}</a>
                 </div>
                 <div class="grid-item request-name">{{ request.request_name }}</div>
             </div>
        {% endfor %}
    </div>
-
 {% endblock %}

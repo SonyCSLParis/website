@@ -8,7 +8,7 @@ class ComponentSpecification(models.Model):
 
     component_name = models.CharField(max_length=200)
     url = models.URLField()
-    description = models.CharField(max_length=200)
+    description = models.TextField(max_length=200)
 
 
 class Request(models.Model):
@@ -18,7 +18,7 @@ class Request(models.Model):
 
     component = models.ForeignKey(ComponentSpecification, on_delete=models.CASCADE)
     request_name = models.CharField(max_length=200)
-    request_description = models.CharField(max_length=200)
+    request_description = models.TextField()
 
     REQUEST_TYPES = (
         ("GET", 'GET'),

@@ -18,5 +18,6 @@ from django.contrib import admin
 
 urlpatterns = [
     path('browser/', include('browser.urls')),
+    path('pipeline/', include('pipeline.urls')),
     path('admin/', admin.site.urls),
 ]

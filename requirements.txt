@@ -1,3 +1,6 @@
 Django
 pytz
 django_filters
+django-tables2
+Pygments
+django-prettyjson
