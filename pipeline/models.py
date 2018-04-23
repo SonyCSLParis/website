@@ -14,7 +14,7 @@ class Pipeline(models.Model):
 class Pipe(models.Model):
 
     pipe_line = models.ForeignKey(Pipeline, on_delete=models.CASCADE)
-    request = Request
+    request = models.ForeignKey(Request, on_delete=models.CASCADE)
     input = models.TextField(null=True, blank=True)
     run_time = models.DateTimeField(null=True, blank=True)  # time at which input was run
     output = models.TextField(null=True, blank=True)

@@ -1,21 +1,24 @@
 from django.views import generic
 from .filters import PipelineFilter
 from .models import Pipeline
+from .forms import InputForm
 from django_filters.views import FilterView
-#from .forms import InputForm
 from django.http import HttpResponse
 from .models import Pipe
-from django.urls import reverse
 from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponseRedirect
 import json
 
-class PipelineView(generic.TemplateView):
+
+class PipelineView(generic.DetailView):
     model = Pipeline
     template_name = 'pipeline/pipeline.html'
 
-    def get(self, request,  *args, **kwargs):
-        return render(request, self.template_name, {"pipeline": Pipeline.objects.get(pk=self.kwargs['pk'])})
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        # Add in a QuerySet of all the books
+        # context['pipeline'] = {"pipeline": Pipeline.objects.get(pk=self.kwargs['pk'])}
+        return context
 
     def post(self, request,  *args, **kwargs):
         input_text = request.POST['input']
@@ -25,10 +28,18 @@ class PipelineView(generic.TemplateView):
         pipe_object.save()
 
         if self.request.is_ajax():
-            return HttpResponse(json.dumps("success"),
-                                content_type="application/json")
+            return HttpResponse(json.dumps("success"), content_type="application/json")
         else:
             return self.get(request, args, kwargs)
+
+
+from .mixins import AjaxFormMixin
+
+
+class JoinFormView(AjaxFormMixin, generic.FormView):
+    form_class = InputForm
+    template_name = 'pipeline/pipeline.html'
+    success_url = '/form-success/'
 
 
 class PipelinesFilterView(FilterView):

@@ -1,5 +1,6 @@
 from django.db import models
-
+from picklefield.fields import PickledObjectField
+from django.contrib import admin
 
 class ComponentSpecification(models.Model):
 
@@ -34,3 +35,12 @@ class Request(models.Model):
         max_length=10,
         choices=REQUEST_TYPES
     )
+
+    parameters = PickledObjectField(default={})
+
+    def parameters_unpacked(self):
+        return u'{parameters}'.format(parameters=self.parameters)
+
+
+class RequestAdmin(admin.ModelAdmin):
+    list_display = ('component', 'request_name', 'request_description', 'request_type', 'parameters')

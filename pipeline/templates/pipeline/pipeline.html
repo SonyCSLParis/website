@@ -18,12 +18,14 @@
                        <div class="pipe row">
                                 <div class="col-xs-1 col-sm-1">{{ pipe.pk }}</div>
                                 <div class="col-xs-11 col-sm-11 input">
-                                    <form action="" method="post">
-                                        {% csrf_token %}
+
+                                    <form class='my-ajax-form' method='POST' action='.' data-url='{{ request.build_absolute_uri|safe }}'>
+                                            {% csrf_token %}
                                         <textarea cols="40" rows="5" name="input">{{ pipe.input }}</textarea>
                                         <input type='hidden' name="pipe_id" value="{{ pipe.pk }}" />
                                         <button class="btn btn-outline-secondary" name="run" type="submit" value="run">run</button>
                                     </form>
+
                                 </div>
                                 <div class="time-run">Run at: {{ pipe.run_time }}</div>
                        </div>
@@ -39,4 +41,42 @@
             {% endfor %}
         </div>>
     </div>
+
+{% endblock %}
+
+
+{% block javascript %}
+    <script>
+        $(document).ready(function(){
+            var $myForm = $('.my-ajax-form')
+            $myForm.submit(function(event){
+                event.preventDefault()
+                var $formData = $(this).serialize()
+                var $thisURL = $myForm.attr('data-url') || window.location.href // or set your own url
+                $.ajax({
+                    method: "POST",
+                    url: $thisURL,
+                    data: $formData,
+                    success: handleFormSuccess,
+                    error: handleFormError,
+                })
+            })
+
+            function handleFormSuccess(data, textStatus, jqXHR){
+
+                console.log('data:')
+                console.log(data)
+                console.log('status:')
+                console.log(textStatus)
+                console.log('jqXHR:')
+                console.log(jqXHR)
+            }
+
+            function handleFormError(jqXHR, textStatus, errorThrown){
+                console.log(jqXHR)
+                console.log(textStatus)
+                console.log(errorThrown)
+            }
+        })
+    </script>
 {% endblock %}

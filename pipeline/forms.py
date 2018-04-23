@@ -1,15 +1,12 @@
 from django import forms
-from django.core.exceptions import ValidationError
 
-#
-# class InputForm(forms.Form):
-#     input = forms.TextInput()
-#
-#     def clean_input(self):
-#         data = self.cleaned_data['input']
-#
-#         # Check date is not in past.
-#         if not data:
-#             raise ValidationError("No input entered.")
-#
-#         return data
+
+class InputForm(forms.Form):
+    input = forms.Textarea()
+
+    # def clean(self):
+    #     cleaned_data = super(InputForm, self).clean()
+    #     input = cleaned_data.get('input')
+    #
+    #     if not input:
+    #         raise forms.ValidationError('No input provided.')
