@@ -9,8 +9,8 @@
 
     <div class="container">
         <div class="request grid-container">
-           <div class="grid-item request-type {{ request.request_type }}">{{ request.request_type }}</div>
-           <div class="grid-item request-name">{{ request.request_name }}</div>
+           <div class="grid-item request-type {{ request.type }}">{{ request.type }}</div>
+           <div class="grid-item request-name">{{ request.name }}</div>
             <div class ="grid-item">parameters: {{request.parameters|json}}</div>
    </div>
 

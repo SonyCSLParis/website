@@ -1,25 +1,30 @@
 from django.db import models
 from picklefield.fields import PickledObjectField
 from django.contrib import admin
+from django import forms
+import json
+
 
 class ComponentSpecification(models.Model):
 
     def __str__(self):
-        return self.component_name
+        return self.name
 
-    component_name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
     url = models.URLField()
     description = models.TextField(max_length=200)
+    host = models.URLField()
+    base_path = models.TextField()
 
 
 class Request(models.Model):
 
     def __str__(self):
-        return '{} {}'.format(self.request_type, self.request_name)
+        return '{} {}'.format(self.type, self.name)
 
     component = models.ForeignKey(ComponentSpecification, on_delete=models.CASCADE)
-    request_name = models.CharField(max_length=200)
-    request_description = models.TextField()
+    name = models.CharField(max_length=200)
+    description = models.TextField()
 
     REQUEST_TYPES = (
         ("GET", 'GET'),
@@ -31,16 +36,43 @@ class Request(models.Model):
         ("CONNECT", 'CONNECT'),
     )
 
-    request_type = models.CharField(
+    type = models.CharField(
         max_length=10,
         choices=REQUEST_TYPES
     )
 
-    parameters = PickledObjectField(default={})
+    parameters = PickledObjectField(default={}, editable=True)
 
     def parameters_unpacked(self):
         return u'{parameters}'.format(parameters=self.parameters)
 
+    path = models.TextField()
+
+
+class RequestForm(forms.ModelForm):
+
+    class Meta:
+        model = Request
+        fields = ['component', 'name', 'description', 'type', 'parameters', 'path']
+
+    def clean_parameters(self):
+         cleaned_data = super(RequestForm, self).clean()
+
+         try:
+             json_params = json.loads(cleaned_data['parameters'])
+         except:
+             return "Invalid JSON"
+
+         return json_params
+
+    def clean(self):
+        cleaned_data = super(RequestForm, self).clean()
+
+        return cleaned_data
+
 
 class RequestAdmin(admin.ModelAdmin):
-    list_display = ('component', 'request_name', 'request_description', 'request_type', 'parameters')
+    list_display = ('component', 'name', 'description', 'type', 'parameters', 'path')
+    list_editable = ('name', 'description', 'type', 'parameters', 'path')
+    form = RequestForm
+

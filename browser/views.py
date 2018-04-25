@@ -39,6 +39,7 @@ class ComponentFilterView(FilterView):
     template_name = 'browser/index.html'
     paginate_by = 4
 
+
 # class IndexView(generic.ListView):
 #     template_name = 'browser/index.html'
 #     context_object_name = 'component_specifications'

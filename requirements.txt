@@ -5,3 +5,6 @@ django-tables2
 Pygments
 django-prettyjson
 django-picklefield
+django-cors-headers
+djangorestframework
+requests

@@ -22,6 +22,22 @@
     width: 100%
 }
 
+.input_field {
+    float:left;
+    display:inline-block;
+    margin: 10px;
+}
+
+.input_fields {
+    position: relative;
+     text-align: center;
+}
+
+.input_row {
+    position: relative;
+     text-align: center;
+}
+
 .output {
     min-height: 100px;
 }

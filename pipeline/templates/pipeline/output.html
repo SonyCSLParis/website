@@ -1,0 +1,7 @@
+<div class="pipe row">
+        <div class="col-xs-1 col-sm-1"></div>
+        <div class={{ "col-xs-11 col-sm-11 output"}}>{{ pipe.output| safe  }}</div>
+       {% if pipe.output_time != None %}
+           <div class="time-received">Received at: {{ pipe.output_time }}</div>
+       {% endif %}
+</div>
