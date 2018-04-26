@@ -9,21 +9,14 @@ function getFormData($form){
     return indexed_array;
 }
 
-function run_form(form_id, pipe_id, rest_url, request_data) {
+function run_form(form_id, pipe_id, rest_url, request_type, request_url) {
     $(document).ready(function () {
         var $myForm = $(form_id);
         $myForm.submit(function (event) {
             event.preventDefault();
             var $formData = getFormData($(this));
             console.log('form submit');
-            console.log(JSON.stringify(request_data));
-            // $.ajax({
-            //     method: "POST",
-            //     url: $thisURL,
-            //     data: $formData,
-            //     success: handleFormSuccess,
-            //     error: handleFormError
-            // })
+            console.log(JSON.stringify($formData));
             $.ajax({
                     // using put here so we can get the body of the
                     // request. Some middleware
@@ -37,13 +30,16 @@ function run_form(form_id, pipe_id, rest_url, request_data) {
                 });
         });
 
-        function handle_save_input_success(data, textStatus, jqXHR) {
+        function handle_save_input_success(data) {
 
             console.log('saved input');
-            request_type = request_data['type'];
-            console.log(rest_url);
-            delete request_data['type'];
-            console.log(request_data);
+            console.log(data);
+
+            request_data = data['data_saved'];
+            request_data['request_url'] = request_url;
+            console.log(request_data)
+
+            $('.input'+pipe_id).load('input/' + pipe_id);
             $.ajax({
                     // using put here so we can get the body of the
                     // request. Some middleware
@@ -74,13 +70,11 @@ function run_form(form_id, pipe_id, rest_url, request_data) {
                       error: handle_output_save_failure
                 });
 
-                function handle_output_save_success(response){
-                    console.log('output saved');
-                    console.log(response);
-
-                    $(pipe_id).load('output/' + pipe_id);
+                function handle_output_save_success(data){
+                    console.log('saved output')
+                    $('.output'+pipe_id).load('output/' + pipe_id);
+                    console.log('updated html')
                 }
-
 
                 function handle_output_save_failure(response){
                     console.log('request failure');

@@ -116,7 +116,7 @@ def save_parameters(pipe_id, parameters, validation_errors):
 
     pipe_object.run_time = now
 
-    pipe_object.save()
+    pipe_object.save(force_update=True)
 
 
 def format_error_output(errors):
@@ -128,10 +128,8 @@ def external_request(request):
     if request.method == 'PUT':
         request_data = json.loads(request.body)
         headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-        json_data = request_data['data']
-        r = requests.post(request_data['url'], json=json_data, headers=headers)
+        r = requests.post(request_data['request_url'], json=request_data, headers=headers)
         return Response({"output": json.loads(r.content)})
-
 
 
 @api_view(['PUT'])
@@ -141,7 +139,7 @@ def save_input(request):
         mapped_params, validation_errors = convert_to_format(request_data)
         save_parameters(request_data['pipe_id'], mapped_params, validation_errors)
 
-        return Response({"message": "success"})
+        return Response({"data_saved": mapped_params})
 
 
 @api_view(['PUT'])
@@ -154,6 +152,6 @@ def save_output(request):
         now = datetime.datetime.now()
         pipe_object.output = json.dumps(request_data)
         pipe_object.output_time = now
-        pipe_object.save()
+        pipe_object.save(force_update=True)
 
-        return Response({"message": "success"})
+        return Response({"data_saved": request_data})

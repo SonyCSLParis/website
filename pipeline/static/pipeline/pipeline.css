@@ -22,8 +22,26 @@
     width: 100%
 }
 
+.expand {
+    width: 100%;
+    text-align: center;
+}
+
+.expand_button_container {
+    position:relative;
+    margin-bottom:10px;
+}
+
+.expand_button_container button {
+    margin-bottom:10px;
+    border-left:1px;
+    border-right:1px;
+    border-bottom:1px;
+    border-top: 0;
+    background-color:lightgray;
+}
+
 .input_field {
-    float:left;
     display:inline-block;
     margin: 10px;
 }
@@ -53,7 +71,7 @@
 }
 
 .input-output-container {
-    margin-bottom: 20px;
+    margin-bottom: 0;
 }
 
 .white-board {

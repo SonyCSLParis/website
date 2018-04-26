@@ -1,11 +1,22 @@
 {% load app_filters %}
+{% load static %}
 <div class="pipe row">
         <div class="col-xs-1 col-sm-1">{{ pipe.pk }}</div>
         <div class="col-xs-11 col-sm-11 input">
+            <script>
+                  var form_id = {{'.form'|strcat:pipe.id|js}};
+                  var pipe_id = {{pipe.id|js}};
+                  var host = '{{pipe.request.component.host}}';
+                  var base_path = '{{pipe.request.component.base_path}}';
+                  var request_path = '{{pipe.request.path}}';
+                  request_path = request_path.slice(1);
+                  var request_name = '{{pipe.request.name}}';
 
-            <form class="form{{pipe.id}}" method='POST' action='.'
-                  data-url='{{ request.build_absolute_uri|safe }}'
-                  id={{pipe.id}}>
+                  var rest_url = '{% url 'rest:request' %}';
+                  request_url = host+base_path+request_path+'/'+request_name;
+                  request_type = {{pipe.request.type|js}};
+           </script>
+            <form class="form{{pipe.id}}" onsubmit="" id={{pipe.id}}>
                     {% csrf_token %}
                 <div class="request-name">
                     {{ pipe.request.component.name}}/{{pipe.request.name}}
@@ -19,8 +30,13 @@
                         {% endif %}
                         <input type='hidden' name={{"type-"|strcat:key}}  value="{{pipe.request.parameters|get_item:key}}" form={{pipe.id}} />
                     {% endfor %}
+                    <script type="text/javascript" src="{% static 'pipeline/run_input.js' %}"></script>
+
                 </div>
                 <input type='hidden' name="pipe_id" value="{{ pipe.pk }}" />
+                <script>
+                    run_form(form_id, pipe_id, rest_url, request_type, request_url)
+                </script>
                 <button class="btn btn-outline-secondary" name="run" type="submit" value="run">run</button>
             </form>
 
