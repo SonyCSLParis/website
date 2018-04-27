@@ -1,0 +1,13 @@
+<div class="pipe" id="pipe{{pipe.id}}">
+       <div id="input{{pipe.id}}">
+           {% include 'pipeline/input.html' %}
+      </div>
+       <div id="output{{pipe.id}}">
+           {% include 'pipeline/output.html' %}
+       </div>
+        <div class="edit_pipe">
+               <div class="edit_pipe_container " id="edit_pipe_{{pipe.id}}">
+                   {% include 'pipeline/edit_pipe.html' %}
+               </div>
+       </div>
+</div>

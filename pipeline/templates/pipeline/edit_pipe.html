@@ -1,0 +1,24 @@
+{% load app_filters %}
+{% load static %}
+
+<div class="btn-group" role="group" aria-label="Toolbar with button groups">
+    <div class="delete_pipe">
+          <button type='button' id="delete_pipe_{{ pipe.id }}" class="btn btn-outline-secondary">-</button>
+          <script> delete_pipe({{ pipe.id }}, '{% url 'rest:request' %}') </script>
+     </div>
+    <div class="btn-group" role="group">
+        <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">+</button>
+
+        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+            {% for request in pipeline.requests.all %}
+                <a class ="dropdown-item" href="#" id='add-after-{{pipe.id}}'>{{ request.name}}</a>
+                <script>
+                      create_pipe_url = '{% url 'rest:create_pipe' %}';
+                      get_input_output_url = '{% url 'pipeline:input_output' %}';
+                      add_pipe({{ pipe.id }}, {{ pipeline.id }}, {{ request.id }}, create_pipe_url, get_input_output_url)
+                </script>
+            {% endfor %}
+        </div>
+    </div>
+</div>

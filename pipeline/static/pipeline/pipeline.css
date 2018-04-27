@@ -1,5 +1,6 @@
+
 .input {
-    border: 2px solid #e0dbe3;
+    border: 1px solid #e0dbe3;
     margin-bottom: 4px;
     min-height: 100px;
     padding-left: 0;
@@ -19,26 +20,44 @@
 
 .input button {
     border-top: 1px solid #0000003d;
+    border-bottom: 0;
+    border-left: 0;
+    border-right: 0;
     width: 100%
 }
 
-.expand {
+.row {
+    margin:0px;
+}
+
+.pipe {
+    margin-left:10px;
+    margin-right:10px;
+}
+
+.edit_pipe {
     width: 100%;
     text-align: center;
 }
 
-.expand_button_container {
+.edit_pipe_container {
     position:relative;
     margin-bottom:10px;
 }
 
-.expand_button_container button {
+.edit_pipe_container button {
     margin-bottom:10px;
-    border-left:1px;
-    border-right:1px;
-    border-bottom:1px;
-    border-top: 0;
-    background-color:lightgray;
+}
+
+.dropdown-toggle::after  { content:none; }
+
+.dropdown.dropdown-center {
+  display: inline-block;
+  width: 180px;
+}
+.dropdown-menu.dropdown-menu-center {
+  text-align: center;
+  width: 180px;
 }
 
 .input_field {
@@ -70,15 +89,13 @@
     color: #909090;
 }
 
-.input-output-container {
-    margin-bottom: 0;
-}
-
 .white-board {
     background-color: white;
     margin-left: 20px;
     margin-right: 20px;
     margin-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 

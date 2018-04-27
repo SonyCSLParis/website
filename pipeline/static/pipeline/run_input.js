@@ -9,9 +9,9 @@ function getFormData($form){
     return indexed_array;
 }
 
-function run_form(form_id, pipe_id, rest_url, request_type, request_url) {
+function run_form(form_id, pipe_id, rest_url, request_type, request_url, input_url, output_url) {
     $(document).ready(function () {
-        var $myForm = $(form_id);
+        var $myForm = $('#'+form_id);
         $myForm.submit(function (event) {
             event.preventDefault();
             var $formData = getFormData($(this));
@@ -34,12 +34,12 @@ function run_form(form_id, pipe_id, rest_url, request_type, request_url) {
 
             console.log('saved input');
             console.log(data);
-
             request_data = data['data_saved'];
             request_data['request_url'] = request_url;
             console.log(request_data)
 
-            $('.input'+pipe_id).load('input/' + pipe_id);
+            $('#input'+pipe_id).load(input_url + '/' + pipe_id);
+
             $.ajax({
                     // using put here so we can get the body of the
                     // request. Some middleware
@@ -72,7 +72,7 @@ function run_form(form_id, pipe_id, rest_url, request_type, request_url) {
 
                 function handle_output_save_success(data){
                     console.log('saved output')
-                    $('.output'+pipe_id).load('output/' + pipe_id);
+                    $('#output'+pipe_id).load(output_url + '/' + pipe_id);
                     console.log('updated html')
                 }
 

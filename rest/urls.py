@@ -21,4 +21,6 @@ urlpatterns = [
     path('', views.external_request, name='request'),
     path('save_output', views.save_output, name='save_output'),
     path('save_input', views.save_input, name='save_input'),
+    path('create_pipe', views.create_pipe, name='create_pipe'),
+    path('delete_pipe', views.delete_pipe, name='delete_pipe'),
     ]

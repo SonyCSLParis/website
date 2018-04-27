@@ -1,7 +1,6 @@
 from django.views import generic
 from .filters import PipelineFilter
 from .models import Pipeline
-from .forms import InputForm
 from django_filters.views import FilterView
 from django.http import HttpResponse
 from .models import Pipe
@@ -149,18 +148,8 @@ class PipelineView(generic.DetailView):
             save_parameters(pipe_id, mapped_params, validation_errors)
             return HttpResponse(json.dumps("success"), content_type="application/json")
         else:
-
             save_parameters(pipe_id, mapped_params, validation_errors)
             return self.get(request, args, kwargs)
-
-
-from .mixins import AjaxFormMixin
-
-
-class JoinFormView(AjaxFormMixin, generic.FormView):
-    form_class = InputForm
-    template_name = 'pipeline/pipeline.html'
-    success_url = '/form-success/'
 
 
 class PipelinesFilterView(FilterView):
@@ -184,6 +173,16 @@ class InputDetailView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['pipe'] = Pipe.objects.get(pk=kwargs['pk'])
+        return context
+
+
+class InputOutputDetailView(generic.TemplateView):
+    template_name = 'pipeline/input_output.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pipe'] = Pipe.objects.get(pk=kwargs['pipe_pk'])
+        context['pipeline'] = Pipeline.objects.get(pk=kwargs['pipeline_pk'])
         return context
 
 #

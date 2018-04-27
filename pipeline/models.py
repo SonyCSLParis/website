@@ -13,6 +13,7 @@ class Pipeline(models.Model):
 
     name = models.CharField(max_length=200)
     description = models.TextField(max_length=200)
+    requests = models.ManyToManyField(Request, related_name="multiple", null=True, blank=True)
 
 
 class Pipe(models.Model):

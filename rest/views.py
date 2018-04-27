@@ -1,7 +1,9 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import requests
-from pipeline.models import Pipe
+from django.core import serializers
+from browser.models import Request
+from pipeline.models import Pipe, Pipeline
 import json
 import datetime
 
@@ -106,6 +108,7 @@ def save_parameters(pipe_id, parameters, validation_errors):
     pipe_object.parameters = parameters
 
     now = datetime.datetime.now()
+    pipe_object.input_time = now
 
     if validation_errors:
         pipe_object.output = format_error_output(validation_errors)
@@ -155,3 +158,31 @@ def save_output(request):
         pipe_object.save(force_update=True)
 
         return Response({"data_saved": request_data})
+
+
+@api_view(['PUT'])
+def create_pipe(request):
+    if request.method == 'PUT':
+        request_data = json.loads(request.body)
+        pipe_id = request_data['pipe_id'] # use this to decide after which pipe to create new pipe
+        request_id = request_data['request_id']
+        pipeline_id = request_data['pipeline_id']
+        pipeline = Pipeline.objects.get(pk=pipeline_id)
+        request = Request.objects.get(pk=request_id)
+        parameters = dict(request.parameters)
+        new_pipe = Pipe.objects.create(pipe_line=pipeline, request=request, parameters=parameters, output='')
+        new_pipe.save()
+        json_new_pipe = json.loads(serializers.serialize('json', [new_pipe]))
+        json_new_pipe = json_new_pipe[0]
+        json_new_pipe['pipe_origin'] = pipe_id
+        return Response({"created_pipe": json_new_pipe})
+
+
+@api_view(['PUT'])
+def delete_pipe(request):
+    if request.method == 'PUT':
+        request_data = json.loads(request.body)
+        pipe_id = request_data['pipe_id']  # use this to decide after which pipe to create new pipe
+        pipe = Pipe.objects.get(pk=pipe_id)
+        pipe.delete()
+        return Response({"deleted_pipe": pipe_id})
