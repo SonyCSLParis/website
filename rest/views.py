@@ -164,13 +164,32 @@ def save_output(request):
 def create_pipe(request):
     if request.method == 'PUT':
         request_data = json.loads(request.body)
-        pipe_id = request_data['pipe_id'] # use this to decide after which pipe to create new pipe
+        pipe_id = request_data['pipe_id']  # use this to decide after which pipe to create new pipe
         request_id = request_data['request_id']
         pipeline_id = request_data['pipeline_id']
         pipeline = Pipeline.objects.get(pk=pipeline_id)
+        pipeline.local_id_gen += 1
+        pipeline.save()
+
+        pipe = Pipe.objects.get(pk=pipe_id)
+        pipe_position = pipe.position
+        next_postition = pipe_position + 1  # this is the position the new pipe will occupy
+
+        # get all pipes at this position and beyond and increment them by 1
+        pipes = Pipe.objects.filter(position__gte=next_postition)
+
+        for pipe in pipes:
+            pipe.position += 1
+            pipe.save()
+
         request = Request.objects.get(pk=request_id)
         parameters = dict(request.parameters)
-        new_pipe = Pipe.objects.create(pipe_line=pipeline, request=request, parameters=parameters, output='')
+        new_pipe = Pipe.objects.create(pipe_line=pipeline,
+                                       request=request,
+                                       parameters=parameters,
+                                       output='',
+                                       local_id=pipeline.local_id_gen,
+                                       position=next_postition)
         new_pipe.save()
         json_new_pipe = json.loads(serializers.serialize('json', [new_pipe]))
         json_new_pipe = json_new_pipe[0]
@@ -186,3 +205,49 @@ def delete_pipe(request):
         pipe = Pipe.objects.get(pk=pipe_id)
         pipe.delete()
         return Response({"deleted_pipe": pipe_id})
+
+
+@api_view(['PUT'])
+def move_up_pipe(request):
+    if request.method == 'PUT':
+        request_data = json.loads(request.body)
+        pipe_id = request_data['pipe_id']  # use this to decide after which pipe to create new pipe
+        pipeline_id = request_data['pipeline_id']  # use this to decide after which pipe to create new pipe
+        current_pipe = Pipe.objects.get(pk=pipe_id)
+        current_position = current_pipe.position
+        try:
+            pipe_after_current = Pipe.objects.filter(pipe_line=pipeline_id) \
+                .get(position=current_position - 1)
+            current_pipe.position = pipe_after_current.position
+            pipe_after_current.position = current_position
+            current_pipe.save()
+            pipe_after_current.save()
+
+            return Response({"pipe_origin_id": pipe_id,
+                             "pipe_swap_id": pipe_after_current.id})
+        except :
+
+            return Response({"message": "couldn't process request"})
+
+
+@api_view(['PUT'])
+def move_down_pipe(request):
+    if request.method == 'PUT':
+        request_data = json.loads(request.body)
+        pipe_id = request_data['pipe_id']  # use this to decide after which pipe to create new pipe
+        pipeline_id = request_data['pipeline_id']  # use this to decide after which pipe to create new pipe
+        current_pipe = Pipe.objects.get(pk=pipe_id)
+        current_position = current_pipe.position
+        try:
+            pipe_before_current = Pipe.objects.filter(pipe_line=pipeline_id)\
+                                              .get(position=current_position + 1)
+            current_pipe.position = pipe_before_current.position
+            pipe_before_current.position = current_position
+            current_pipe.save()
+            pipe_before_current.save()
+
+            return Response({"pipe_origin_id": pipe_id,
+                             "pipe_swap_id": pipe_before_current.id})
+        except:
+
+            return Response({"message": "couldn't process request"})

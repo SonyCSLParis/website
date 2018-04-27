@@ -73,3 +73,70 @@ function delete_pipe(pipe_id, rest_url) {
         });
     });
 }
+
+
+function move_up_pipe(pipe_id, pipeline_id, rest_url) {
+
+    jQuery("#move_up_pipe_" + pipe_id).click(function (e) {
+        e.preventDefault();
+        var request_data = {};
+        request_data['pipe_id'] = pipe_id;
+        request_data['pipeline_id'] = pipeline_id;
+        console.log('moving up pipe ' + pipe_id);
+        console.log(request_data);
+        $.ajax({
+            method: "PUT",
+            url: rest_url + 'move_up_pipe',
+            dataType: "json",
+            dataContent: "json",
+            data: JSON.stringify(request_data),
+            success: function (response) {
+                console.log('moved up pipe');
+                console.log(response);
+                pipe_origin_id = response['pipe_origin_id'];
+                pipe_swap_id = response['pipe_swap_id'];
+                console.log("#pipe" +pipe_origin_id)
+                console.log("#pipe"+pipe_swap_id)
+
+                $("#pipe" +pipe_origin_id).after($("#pipe"+pipe_swap_id));
+               // $("#pipe" + response['deleted_pipe']).remove();$("#element1").before($("#element2"));
+            },
+            error: function (response) {
+                console.log('failed to remove pipe' + response['deleted_pipe'])
+            }
+        });
+    });
+}
+
+
+function move_down_pipe(pipe_id, pipeline_id, rest_url) {
+
+    jQuery("#move_down_pipe_" + pipe_id).click(function (e) {
+        e.preventDefault();
+        var request_data = {};
+        request_data['pipe_id'] = pipe_id;
+        request_data['pipeline_id'] = pipeline_id;
+        console.log('moving up pipe ' + pipe_id);
+        console.log(request_data);
+        $.ajax({
+            method: "PUT",
+            url: rest_url + 'move_down_pipe',
+            dataType: "json",
+            dataContent: "json",
+            data: JSON.stringify(request_data),
+            success: function (response) {
+                console.log('moved down pipe');
+                console.log(response);
+                pipe_origin_id = response['pipe_origin_id'];
+                pipe_swap_id = response['pipe_swap_id'];
+                console.log("#pipe" +pipe_origin_id)
+                console.log("#pipe"+pipe_swap_id)
+
+                $("#pipe" +pipe_swap_id).after($("#pipe"+pipe_origin_id));
+            },
+            error: function (response) {
+                console.log('failed to remove pipe' + response['deleted_pipe'])
+            }
+        });
+    });
+}

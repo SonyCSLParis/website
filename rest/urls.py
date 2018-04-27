@@ -23,4 +23,6 @@ urlpatterns = [
     path('save_input', views.save_input, name='save_input'),
     path('create_pipe', views.create_pipe, name='create_pipe'),
     path('delete_pipe', views.delete_pipe, name='delete_pipe'),
+    path('move_up_pipe', views.move_up_pipe, name='move_up_pipe'),
+    path('move_down_pipe', views.move_down_pipe, name='delete_pipe')
     ]

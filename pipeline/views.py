@@ -135,21 +135,9 @@ class PipelineView(generic.DetailView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        # Add in a QuerySet of all the books
-        # context['pipeline'] = {"pipeline": Pipeline.objects.get(pk=self.kwargs['pk'])}
+        context['sorted_pipes'] = [pipe for pipe in Pipe.objects.filter(pipe_line=context["pipeline"]).order_by('position')]
+
         return context
-
-    def post(self, request,  *args, **kwargs):
-        mapped_params, validation_errors = convert_to_format(request.POST)
-        pipe_id = request.POST['pipe_id']
-
-        if self.request.is_ajax():
-
-            save_parameters(pipe_id, mapped_params, validation_errors)
-            return HttpResponse(json.dumps("success"), content_type="application/json")
-        else:
-            save_parameters(pipe_id, mapped_params, validation_errors)
-            return self.get(request, args, kwargs)
 
 
 class PipelinesFilterView(FilterView):
