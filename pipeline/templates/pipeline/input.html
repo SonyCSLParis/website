@@ -1,7 +1,7 @@
 {% load app_filters %}
 {% load static %}
 <div class="row">
-        <div class="col-xs-1 col-sm-1">{{ pipe.pk }}</div>
+        <div class="col-xs-1 col-sm-1">{{ pipe.local_id }}</div>
         <div class="col-xs-11 col-sm-11 input">
                 <script>
                       var form_id = {{'form'|strcat:pipe.id|js}};
@@ -42,4 +42,7 @@
             </form>
         </div>
 </div>
-<div class="time-run">Run at: {{ pipe.run_time }}</div>
+
+{% if pipe.run_time != None %}
+    <div class="time-run">Run at: {{ pipe.run_time }}</div>
+{% endif %}
