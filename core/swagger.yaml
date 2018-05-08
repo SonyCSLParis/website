@@ -1,0 +1,906 @@
+---
+swagger: "2.0"
+info:
+  description: The is the natural language processing API created by Vrije Universiteit Brussel for the [ODYCCEUS](https://www.odycceus.eu/) project.
+  version: 1.1.2
+  title: Penelope natural language processing API
+  contact:
+    email: michael.anslow@sony.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+host: www.fcg-net.org
+basePath: /
+tags:
+- name: public
+  description: operations available to the general public
+- name: developers
+  description: operations available to regular developers
+- name: penelope
+  description: operations available to the penelope platform
+schemes:
+- https
+paths:
+  /fcg-interactive/fcg-request:
+    post:
+      tags:
+      - developers
+      - penelope
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: data
+        description: data
+        required: false
+        schema:
+          $ref: '#/definitions/data'
+      responses:
+        200:
+          description: Response sent back by FCG.
+          schema:
+            $ref: '#/definitions/inline_response_200'
+        500:
+          description: internal service error occured
+  /penelope/nlp/tok:
+    post:
+      tags:
+      - developers
+      - penelope
+      summary: Splits text into tokens.
+      description: Splits an input string into tokens.  Backed by spacy language model and framework (https://spacy.io/).
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: text
+        description: text to tokenise
+        required: false
+        schema:
+          $ref: '#/definitions/text'
+      responses:
+        200:
+          description: white string seperated tokens
+          schema:
+            $ref: '#/definitions/inline_response_200_1'
+        500:
+          description: internal service error occured
+  /penelope/nlp/glove:
+    post:
+      tags:
+      - developers
+      - penelope
+      summary: Returns glove vector for each token.
+      description: Splits the text input into tokens then provides a glove vector for each token.  Backed by spacy language model and framework (https://spacy.io/).
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: text
+        description: White spaced text that will be tokenised
+        required: false
+        schema:
+          $ref: '#/definitions/text_1'
+      responses:
+        200:
+          description: word and similarity tuples
+          schema:
+            $ref: '#/definitions/inline_response_200_2'
+        500:
+          description: internal service error occured
+  /penelope/nlp/explain:
+    get:
+      tags:
+      - developers
+      summary: Provides a glossary description of terms used in the models such as named entity classes, dependency relations and pos tags.  Backed by spacy language model and framework (https://spacy.io/).
+      description: splits an input string into tokens
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: term
+        in: query
+        description: Glossary term to look up.
+        required: true
+        type: string
+      responses:
+        200:
+          description: Glossary description.
+          schema:
+            type: string
+            example: Nationalities or religious or political groups
+        500:
+          description: internal service error occured
+  /penelope/nlp/model_info:
+    get:
+      tags:
+      - developers
+      summary: Returns information about the available models.
+      description: Returns information about available models.  Backed by spacy language model and framework (https://spacy.io/).
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        200:
+          description: information about available models
+        500:
+          description: internal service error occured
+  /penelope/nlp/pipeline:
+    post:
+      tags:
+      - developers
+      - penelope
+      summary: Filters and transforms input text according to specified pipeline.  Backed by spacy language model and framework (https://spacy.io/).
+      description: "Specifies a text processing pipeline that alters input text and\
+        \ returns the altered text. There are two sub-pipelines that are applied in\
+        \ order to transform and filter the input text. The first pipeine is the 'text\
+        \ pipeline' that only operates on the input text as a whole without performing\
+        \ any kind of parsing. This is useful for generic text processing such as\
+        \ removing content between markup. The second pipeline is called the 'token\
+        \ pipeline' that takes the output of the text processing and parses the text\
+        \ into a document. A document is a collection of tokens (words) and information\
+        \ about how tokens relate to one another. The reason that the pipeline is\
+        \ called the 'token pipeline' and not the 'document pipeline' is that the\
+        \ pipes focus on transforming and filtering tokens and not documents. However,\
+        \ the structural information available at the document level (e.g. token dependencies)\
+        \ provides useful contextual information to help operating on tokens and is\
+        \ necessary for some pipes that merge tokens together based on this structural\
+        \ information.\nDuring the initial parse of text into a document, numerous\
+        \ attributes are extracted at once. For example, token lemmas, whether a token\
+        \ is a stop word, a number, a url etc. as well as noun phrases and named entities.\
+        \ The reason for this is that it is at this point that all of the contextual\
+        \ information about how tokens relate to one another is available. This is\
+        \ especially important for detecting noun phrases and named entities. This\
+        \ information is never lost in the pipeline and remains as 'ground truth'\
+        \ available to pipes.\nAfter the initial parse, a copy of the ground truth\
+        \ is made so that for each attribute, we have a value that can be altered\
+        \ by a pipe. Two important attributes are the 'text' attribute and an additional\
+        \ 'keep' attribute. The text attribute is what will be output at the end of\
+        \ the pipeline and the keep attribute is a boolean flag indicating whether\
+        \ the token should be removed or not from the final output. When a pipe is\
+        \ applied, token attributes are altered. So a filter might make a token's\
+        \ 'keep' value false so that it will not be included in the output. Multiple\
+        \ attributes might be changed by a pipe. So for example, if alpha numeric\
+        \ numbers are removed from the text 'Bob2182' resulting in 'Bob', the lemma\
+        \ should change from 'bob2182' to 'bob' as well. Or, while 'the23' might not\
+        \ be a stop word, when applying remove alpha numeric characters, ‘the’ is\
+        \ a stop word and so its stop word attribute should be set to True when it\
+        \ would have been False before. You can think of the pipeline processing as\
+        \ initially taking a snapshot of ground truth then iteratively altering this\
+        \ snapshot away from the ground truth with pipes. \nPipe changes to attributes\
+        \ are local to each token for the most part. By that I mean that the pipe\
+        \ iterates through one token at a time and alters its attributes without considering\
+        \ or altering other token attributes. For example, the pos tag of a token\
+        \ is not affected by the tokens surrounding it being filtered out by a pipe\
+        \ (i.e.attribute ‘keep’ set to false). The pipe does have access to the entire\
+        \ document so pipes can in theory change any part of the document. However,\
+        \ in general they don’t and if they do this should be indicated in their documentation.\n\
+        There are two special pipes that do not operate in the same way as was described\
+        \ previously as the operated at the ‘document’ level. These are the named\
+        \ entity chunking and noun phrase chunking pipes. These takes the named entities\
+        \ and noun phrases identified during the initial parse and use them to merge\
+        \ together tokens into a new token. The new token is a combination of the\
+        \ attributes of the existing tokens.\nThe behaviour of the pipelines can be\
+        \ altered by data that is specified in the 'pipeline_data' object. This data\
+        \ is used by some of the pipes as additioanl context for how they should behave.\
+        \ For example, filtering by tags will use the tags passed as pipeline data\
+        \ to decide which tokens should be filtered out from the final output. \n\
+        In the token pipeline there are three kinds of pipes. Transformation pipes\
+        \ which alter text, structure pipes which token boundaries such as chunking\
+        \ two tokens into one and finally filter functions remove tokens from output.\
+        \ It should be noted that the structure pipes also act as a form of transformation\
+        \ pipe by redefining the text, lemma and tag a chunk should have when merging\
+        \ multiple tokens into a single new token. The tag given to a noun chunk \
+        \ after merging is 'NOUNCHUNK' and to a named entity chunk after merging is\
+        \ 'ENTITYCHUNK'. \nIt may be helpful to run your pipeline with show_debug\
+        \ = 1 when constructing a pipeline. This outputs the pipe applied and its\
+        \ resulting output text. This debug output will also be output if there is\
+        \ an exception raised which will help pinpoint at what stage in the pipeline\
+        \ processing failed.\n"
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: data
+        description: data
+        required: false
+        schema:
+          $ref: '#/definitions/data_1'
+      responses:
+        200:
+          description: resulting tokens, one list of tokens per input document string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/inline_response_200_3'
+        500:
+          description: internal service error occured
+  /penelope/nlp/lemma:
+    post:
+      tags:
+      - developers
+      - penelope
+      summary: Lemmatise each token
+      description: Lemmatises each token.  Backed by spacy language model and framework (https://spacy.io/).
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: text
+        description: tokens to lemmatise
+        required: false
+        schema:
+          $ref: '#/definitions/text_2'
+      responses:
+        200:
+          description: white string seperated tokens
+          schema:
+            $ref: '#/definitions/inline_response_200_4'
+        500:
+          description: internal service error occured
+  /penelope/nlp/ent:
+    post:
+      tags:
+      - developers
+      - penelope
+      summary: Returns named entities found in text and their entity types.
+      description: Parses text and identifies named entities within it. Returns list of named entities and named entity types.  Backed by spacy language model and framework (https://spacy.io/).
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: text
+        description: text to tokenise
+        required: false
+        schema:
+          $ref: '#/definitions/text_3'
+      responses:
+        200:
+          description: Dictionary
+          schema:
+            $ref: '#/definitions/inline_response_200_5'
+        500:
+          description: internal service error occured
+  /penelope/nlp/dep:
+    post:
+      tags:
+      - penelope
+      - developers
+      summary: Returns dependency tree for text.
+      description: Parses text into sentences and returns dependency tree for each sentence.  Backed by spacy language model and framework (https://spacy.io/).
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: text
+        description: text to tokenise
+        required: false
+        schema:
+          $ref: '#/definitions/text_4'
+      responses:
+        200:
+          description: Dictionary
+          schema:
+            $ref: '#/definitions/inline_response_200_6'
+        500:
+          description: internal service error occured
+  /penelope/word2vec/sim:
+    post:
+      tags:
+      - developers
+      - penelope
+      summary: Provides most similar words to the mean of the positive tokens minus the mean of the negative word vectors.
+      description: Given positive and negative tokens as white space seperated strings, return the set of most similar tokens according to their word2vec embeddings. The most similar tokens are those that are closest to the positive token vectors and furthest away from the negative token vectors.
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: data
+        description: data dictionary containing arguments
+        required: false
+        schema:
+          $ref: '#/definitions/data_2'
+      responses:
+        200:
+          description: word and similarity tuples
+          schema:
+            $ref: '#/definitions/inline_response_200_7'
+        400:
+          description: parameters were invalid
+        500:
+          description: internal service error occured
+  /penelope/word2vec/vec:
+    post:
+      tags:
+      - developers
+      - penelope
+      summary: Provides word embeddings for given tokens.
+      description: Given tokens as a white space seperated string, return a word vector for each token.
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: data
+        description: data dictionary containing arguments
+        required: false
+        schema:
+          $ref: '#/definitions/data_3'
+      responses:
+        200:
+          description: word and similarity tuples
+          schema:
+            $ref: '#/definitions/inline_response_200_2'
+        400:
+          description: parameters were invalid
+        500:
+          description: internal service error occured
+  /penelope/topics/topics:
+    get:
+      tags:
+      - developers
+      - penelope
+      summary: provides an interface to a topic model trained on the Guardian comments about climate change
+      description: provides an interface to topic models created using latent-dirichlet allocation and trained on the Guardian comments about climate change
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: collection
+        in: query
+        required: false
+        type: string
+        default: GuardianArticles
+      - name: num_topics
+        in: query
+        description: number of topics to return as word distributions. Order of topics is just the order of the topics from 0 to N topics created during training.
+        required: false
+        type: integer
+        default: 5
+      - name: num_words
+        in: query
+        description: return n most probable words according to multinomial distribution over words found during latent dirichlet allocation
+        required: false
+        type: integer
+        default: 5
+      - name: chunked
+        in: query
+        description: if set to true then use the model trained on chunked tokens i.e. where climate change was altered to climatechange
+        required: false
+        type: boolean
+        default: "0"
+      responses:
+        200:
+          description: word and similarity tuples
+          schema:
+            $ref: '#/definitions/inline_response_200_8'
+        400:
+          description: parameters were invalid
+        500:
+          description: internal service error occured
+  /penelope/topics/documents:
+    get:
+      tags:
+      - developers
+      - penelope
+      summary: provides an interface to a topic model trained on the Guardian comments about climate change
+      description: provides an interface to topic models created using latent-dirichlet allocation and trained on the Guardian comments about climate change
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: collection
+        in: query
+        required: false
+        type: string
+        default: GuardianArticles
+      - name: limit
+        in: query
+        description: number of documents to return.
+        required: false
+        type: integer
+        default: 10
+      - name: chunked
+        in: query
+        description: if set to true then use the model trained on chunked tokens i.e. where climate change was altered to climatechange
+        required: false
+        type: boolean
+        default: "0"
+      responses:
+        200:
+          description: word and similarity tuples
+        400:
+          description: parameters were invalid
+        500:
+          description: internal service error occured
+definitions:
+  data:
+    type: object
+    required:
+    - handlerMethod
+    properties:
+      handlerMethod:
+        type: string
+        example: fcg-comprehend
+        description: |
+          Two handler methods are supported\: * 'fcg-comprehend' - Parses the input utterance to a meaning * 'fcg-formulate' - Produces an utterance for a given meaning
+        enum:
+        - fcg-comprehend
+        - fcg-formulate
+      utterance:
+        type: string
+        example: The man eats an apple.
+      cxnInventory:
+        type: string
+        example: '*fcg-constructions*'
+      package:
+        type: string
+        example: english-grammar
+      visualisation:
+        type: string
+        example: text
+      monitor:
+        type: string
+        example: trace-fcg-interactive
+  inline_response_200_7_most_similar_tokens:
+    properties:
+      similarity:
+        type: number
+        example: 0.4941135645,
+      token:
+        type: string
+        example: global
+      frequency:
+        type: number
+        example: 202832.0
+    example:
+      similarity: 0.4941135645,
+      token: global
+      frequency: 202832.0
+  inline_response_200_6_dependencies:
+    properties:
+      tree:
+        type: array
+        items:
+          $ref: '#/definitions/inline_response_200_6_tree'
+    example:
+      tree:
+      - tag: NNS
+        head_id: "0"
+        node_id: "1"
+        token: dynamics
+      - tag: NNS
+        head_id: "0"
+        node_id: "1"
+        token: dynamics
+  inline_response_200_2_vectors:
+    properties:
+      token:
+        type: string
+        example: climate
+      vector:
+        type: array
+        items:
+          type: number
+          example: ""
+    example:
+      vector:
+      - ""
+      - ""
+      token: climate
+  inline_response_200_8_topic_1:
+    properties:
+      prob:
+        type: number
+        example: 0.0382405431,
+      word:
+        type: string
+        example: people
+    example:
+      prob: 0.0382405431,
+      word: people
+  inline_response_200_8_topic_0:
+    properties:
+      prob:
+        type: number
+        example: 0.043527702,
+      word:
+        type: string
+        example: world
+    example:
+      prob: 0.043527702,
+      word: world
+  text_3:
+    type: object
+    required:
+    - text
+    properties:
+      text:
+        type: string
+        example: Opinion dynamics and cultural conflict in European spaces.
+  inline_response_200:
+    properties:
+      fcgResponse:
+        type: string
+        example: ((OBJECT APPLE ?R-139 ?X-3421 ?Y-949) (NUMBER-VALUE SINGULAR ?R-139) (REFERENT-STATUS IDENTIFIABLE-REF ?X-958 ?R-4387) (REFERENT-STATUS INDEFINITE-AN ?Y-949 ?R-139) (OBJECT MAN ?R-4387 ?X-7669 ?X-958) (NUMBER-VALUE SINGULAR ?R-4387) (QUALIFY-EVENT NON-PROGRESSIVE ?ASP-EV-1 ?EV-949) (TEMPORAL-RELATION SIMULTANEOUS ?PERF-EV-17 ?ASP-EV-1 REFERENCE-POINT) (SITUATED-EVENT PRESENT-INDICATIVE ?EV-949 ?PERF-EV-17) (EAT-2 ?EV-949 ?Y-949) (EAT-1 ?EV-949 ?X-958) (EVENT-FRAME EAT ?EV-949) (SEMANTIC-FUNCTION EVENT ?EV-949) (SECONDARY-PERSPECTIVE ?EV-949 ?Y-949) (PRIMARY-PERSPECTIVE ?EV-949 ?X-958) (PERFORM-SPEECH-ACT ?EV-949 ASSERTION) (SENTENCE-TOPIC ?EV-949 ?X-958) (SEMANTIC-FRAME TRANSITIVE ?EV-949))
+    example:
+      fcgResponse: ((OBJECT APPLE ?R-139 ?X-3421 ?Y-949) (NUMBER-VALUE SINGULAR ?R-139) (REFERENT-STATUS IDENTIFIABLE-REF ?X-958 ?R-4387) (REFERENT-STATUS INDEFINITE-AN ?Y-949 ?R-139) (OBJECT MAN ?R-4387 ?X-7669 ?X-958) (NUMBER-VALUE SINGULAR ?R-4387) (QUALIFY-EVENT NON-PROGRESSIVE ?ASP-EV-1 ?EV-949) (TEMPORAL-RELATION SIMULTANEOUS ?PERF-EV-17 ?ASP-EV-1 REFERENCE-POINT) (SITUATED-EVENT PRESENT-INDICATIVE ?EV-949 ?PERF-EV-17) (EAT-2 ?EV-949 ?Y-949) (EAT-1 ?EV-949 ?X-958) (EVENT-FRAME EAT ?EV-949) (SEMANTIC-FUNCTION EVENT ?EV-949) (SECONDARY-PERSPECTIVE ?EV-949 ?Y-949) (PRIMARY-PERSPECTIVE ?EV-949 ?X-958) (PERFORM-SPEECH-ACT ?EV-949 ASSERTION) (SENTENCE-TOPIC ?EV-949 ?X-958) (SEMANTIC-FRAME TRANSITIVE ?EV-949))
+  text_2:
+    type: object
+    required:
+    - text
+    properties:
+      text:
+        type: string
+        example: runs ran running
+  text:
+    type: object
+    required:
+    - text
+    properties:
+      text:
+        type: string
+        example: climate change
+  text_4:
+    type: object
+    required:
+    - text
+    properties:
+      text:
+        type: string
+        example: Opinion dynamics and cultural conflict in European spaces.
+  inline_response_200_5:
+    properties:
+      named_entities:
+        type: array
+        items:
+          $ref: '#/definitions/inline_response_200_5_named_entities'
+    example:
+      named_entities:
+      - ent: NORP
+        text: European
+      - ent: NORP
+        text: European
+  inline_response_200_6:
+    properties:
+      dependencies:
+        type: array
+        items:
+          $ref: '#/definitions/inline_response_200_6_dependencies'
+    example:
+      dependencies:
+      - tree:
+        - tag: NNS
+          head_id: "0"
+          node_id: "1"
+          token: dynamics
+        - tag: NNS
+          head_id: "0"
+          node_id: "1"
+          token: dynamics
+      - tree:
+        - tag: NNS
+          head_id: "0"
+          node_id: "1"
+          token: dynamics
+        - tag: NNS
+          head_id: "0"
+          node_id: "1"
+          token: dynamics
+  text_1:
+    type: object
+    required:
+    - text
+    properties:
+      text:
+        type: string
+        example: climate change
+  inline_response_200_7:
+    properties:
+      most_similar_tokens:
+        type: array
+        items:
+          $ref: '#/definitions/inline_response_200_7_most_similar_tokens'
+    example:
+      most_similar_tokens:
+      - similarity: 0.4941135645,
+        token: global
+        frequency: 202832.0
+      - similarity: 0.4941135645,
+        token: global
+        frequency: 202832.0
+  inline_response_200_8:
+    properties:
+      topic_0:
+        type: array
+        items:
+          $ref: '#/definitions/inline_response_200_8_topic_0'
+      topic_1:
+        type: array
+        items:
+          $ref: '#/definitions/inline_response_200_8_topic_1'
+    example:
+      topic_0:
+      - prob: 0.043527702,
+        word: world
+      - prob: 0.043527702,
+        word: world
+      topic_1:
+      - prob: 0.0382405431,
+        word: people
+      - prob: 0.0382405431,
+        word: people
+  data_2:
+    required:
+    - positive
+    properties:
+      collection:
+        type: string
+        example: GuardianArticles
+      positive:
+        type: string
+        example: climate change
+      negative:
+        type: string
+        example: coal
+      chunked:
+        type: boolean
+        example: false
+      num_tokens:
+        type: integer
+        example: 20
+        description: number of most similar words to return. Actual number of returned tokens may be less than this as 20 * num_tokens are sampled first and those that occured less than min_count number of times are removed before returning the first num_tokens tokens.
+      min_count:
+        type: integer
+        example: 200
+        description: minimum number of times a token needed to appear in the source corpus to be included in the returned similarities.
+  data_1:
+    type: object
+    properties:
+      texts:
+        type: array
+        example:
+        - Opinion Dynamics and Cultural Conflict in the European Union. Barack Obama. 1 2 <tag>3 4</tag>.
+        - Another string to process.
+        description: Array of documents where each document is a string.
+        items:
+          type: string
+      model:
+        type: string
+        example: en
+      pipeline_data:
+        $ref: '#/definitions/penelopenlppipeline_pipeline_data'
+      text_pipeline:
+        type: array
+        example:
+        - rmarkup
+        items:
+          type: string
+          enum:
+          - rmarkup
+      token_pipeline:
+        type: array
+        example:
+        - fstop
+        - tlemma
+        - schunk_ents
+        - schunk_nphrases
+        - tlower
+        - talphanum
+        - ftags
+        - furls
+        - fnum
+        description: "schunk_ents -  will merge named entitiy tokens together. If\
+          \ ents was provided as data only entities of the provided types are merged.\
+          \ The lemma for this new merged token is the concatenation of the lemmas\
+          \ of the original tokens.\nschunk_nphrases - will merge noun phrases together.\
+          \ If nchunkdeps is provided, only noun phrases containing one of the listed\
+          \ dependencies will be chunked. The lemma for this new merged token is the\
+          \ concatenation of the lemmas of the original tokens.\ntlemma - lemmatise\
+          \ token text. Lemmas are only calculated from text passed into pipeline\
+          \ with the exception of merged tokens that concatenate these original lemmas.\
+          \ As a consequence of this, lemmatisation should occur before other transformations\
+          \ if it is desired as the tlemma pipe simply replaces the token text with\
+          \ the original lemma.\ntalphanum - transforms token text by removing non\
+          \ alphanumeric characters\nftags - filters out tokens that are not one of\
+          \ the tags that were provided in pipeline_data. Both universal tags and\
+          \ pos tags can be used here together. Consult spacy to determine what tags\
+          \ to use for a given language. \nfstop - filters out tokens that have text\
+          \ that are stop words such as 'it', 'a', 'and, 'that' etc. \nfurls - filters\
+          \ out tokens that are urls\nfnum - filters out tokens that are numbers.\n"
+        items:
+          type: string
+          enum:
+          - fstop
+          - tlemma
+          - schunk_ents
+          - schunk_nphrases
+          - tlower
+          - talphanum
+          - ftags
+          - furls
+          - fnum
+  inline_response_200_5_named_entities:
+    properties:
+      text:
+        type: string
+        example: European
+      ent:
+        type: string
+        example: NORP
+    example:
+      ent: NORP
+      text: European
+  data_3:
+    required:
+    - text
+    properties:
+      averaged:
+        type: boolean
+        example: false
+        description: if set to true then return a single vector that is the average vector of all tokens
+      text:
+        type: string
+        example: climate change
+      chunked:
+        type: boolean
+        example: false
+        description: if set to true then use the model trained on chunked tokens i.e. where climate change was altered to climatechange
+  inline_response_200_6_tree:
+    properties:
+      node_id:
+        type: string
+        example: "1"
+      head_id:
+        type: string
+        example: "0"
+      token:
+        type: string
+        example: dynamics
+      tag:
+        type: string
+        example: NNS
+    example:
+      tag: NNS
+      head_id: "0"
+      node_id: "1"
+      token: dynamics
+  inline_response_200_1:
+    properties:
+      tokens:
+        type: array
+        items:
+          type: string
+          example: ""
+    example:
+      tokens:
+      - ""
+      - ""
+  inline_response_200_2:
+    properties:
+      vectors:
+        type: array
+        items:
+          $ref: '#/definitions/inline_response_200_2_vectors'
+    example:
+      vectors:
+      - vector:
+        - ""
+        - ""
+        token: climate
+      - vector:
+        - ""
+        - ""
+        token: climate
+  inline_response_200_3:
+    properties:
+      tokens:
+        type: array
+        example:
+        - string
+        items:
+          type: string
+      debug:
+        type: array
+        example:
+        - rmarkup -> Another string to process.
+        - fstop -> string,process,.
+        - tlemma -> string,process,.
+        - schunk_ents -> string,process,.
+        - schunk_nphrases -> string,process,.
+        - tlower -> string,process,.
+        - talphanum -> string,process,
+        - ftags -> string
+        - furls -> string
+        - fnum -> string
+        items:
+          type: string
+    example:
+      debug:
+      - rmarkup -> Another string to process.
+      - fstop -> string,process,.
+      - tlemma -> string,process,.
+      - schunk_ents -> string,process,.
+      - schunk_nphrases -> string,process,.
+      - tlower -> string,process,.
+      - talphanum -> string,process,
+      - ftags -> string
+      - furls -> string
+      - fnum -> string
+      tokens:
+      - string
+  penelopenlppipeline_pipeline_data:
+    properties:
+      show_debug:
+        type: boolean
+        example: false
+      ents:
+        type: array
+        example:
+        - NORP
+        - GPE
+        - PERSON
+        items:
+          type: string
+      nchunkdeps:
+        type: array
+        example:
+        - amod
+        - compound
+        items:
+          type: string
+      tags:
+        type: array
+        example:
+        - NOUN
+        - NOUNCHUNK
+        - ENTCHUNK
+        items:
+          type: string
+      markup:
+        type: array
+        description: Pairs of opening and closing tags whose contents will be removed in the order that the tag pairs are provided. If quotes are nested, everthing within the outer most quotes is removed.
+        items:
+          type: array
+          example:
+          - <tag>
+          - </tag>
+          items:
+            type: string
+  inline_response_200_4:
+    properties:
+      tokens:
+        type: array
+        example:
+        - run
+        - run
+        - run
+        items:
+          type: string
+    example:
+      tokens:
+      - run
+      - run
+      - run

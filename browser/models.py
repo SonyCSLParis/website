@@ -11,10 +11,24 @@ class ComponentSpecification(models.Model):
         return self.name
 
     name = models.CharField(max_length=200)
-    url = models.URLField()
     description = models.TextField(max_length=200)
     host = models.URLField()
     base_path = models.TextField()
+    title = models.TextField()
+    version = models.TextField()
+    openapi_version = models.TextField()
+
+
+class Parameter(models.Model):
+
+    name = models.TextField()
+    type = models.TextField()
+    value = models.TextField(null=True, blank=True)
+    example = models.TextField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    enum = models.TextField(null=True, blank=True)
+    required = models.TextField()
+    default = models.TextField(null=True, blank=True)
 
 
 class Request(models.Model):
@@ -41,7 +55,7 @@ class Request(models.Model):
         choices=REQUEST_TYPES
     )
 
-    parameters = PickledObjectField(default={}, editable=True)
+    parameters = models.ManyToManyField(Parameter)
 
     def parameters_unpacked(self):
         return u'{parameters}'.format(parameters=self.parameters)
@@ -72,7 +86,7 @@ class RequestForm(forms.ModelForm):
 
 
 class RequestAdmin(admin.ModelAdmin):
-    list_display = ('component', 'name', 'description', 'type', 'parameters', 'path')
-    list_editable = ('name', 'description', 'type', 'parameters', 'path')
+    list_display = ('component', 'name', 'description', 'type', 'path')
+    list_editable = ('name', 'description', 'type', 'path')
     form = RequestForm
 

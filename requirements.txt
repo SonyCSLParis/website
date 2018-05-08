@@ -8,3 +8,4 @@ django-picklefield
 django-cors-headers
 djangorestframework
 requests
+bravado
