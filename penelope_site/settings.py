@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'rest',
     'django_tables2',
     'pipeline',
+    'upload',
     'prettyjson',
     'corsheaders',
     'rest_framework'

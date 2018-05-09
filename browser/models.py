@@ -23,7 +23,7 @@ class Parameter(models.Model):
 
     name = models.TextField()
     type = models.TextField()
-    value = models.TextField(null=True, blank=True)
+    nested = models.ManyToManyField('self', related_name='sub_param', symmetrical=False) #
     example = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     enum = models.TextField(null=True, blank=True)
@@ -38,7 +38,7 @@ class Request(models.Model):
 
     component = models.ForeignKey(ComponentSpecification, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
 
     REQUEST_TYPES = (
         ("GET", 'GET'),

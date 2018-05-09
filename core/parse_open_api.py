@@ -1,15 +1,18 @@
 import os
 from bravado_core.spec import Spec
 import json
+import requests
+
 from collections import namedtuple
+import yaml
 # TODO these fields should mimic those in the DJANGO models. There is an issue with importing the model
 # fields via Model._meta.fields as Django isn't yet loaded when running this script in isolation otherwise
 # I would recommend using these fields to define the named tuples.
 
-Request = namedtuple('Request', ['path', 'name', 'type', 'parameters', 'description'])
-Component = namedtuple('Component', ['title', 'host', 'base_path', 'description', 'summary',
-                                     'version', 'openapi_version', 'requests'])
-Parameter = namedtuple('Parameter', ['type', 'name', 'default', 'example', 'description', 'enum', 'required'])
+request_fields = ['path', 'name', 'type', 'parameters', 'description']
+component_fields = ['title', 'host', 'base_path', 'description', 'summary',
+                                     'version', 'openapi_version', 'requests']
+parameter_fields = ['type', 'name', 'default', 'example', 'description', 'enum', 'required', 'nested']
 
 
 def get_def(inner_schema, swagger_spec):
@@ -20,7 +23,7 @@ def get_def(inner_schema, swagger_spec):
 
 
 def get_if_present_else_none(keys, dict):
-    return {key: dict[key] if key in dict else None for key in keys}
+    return {key: dict[key] for key in keys if key in dict}
 
 
 def extract_schema_get(parameters):
@@ -28,8 +31,8 @@ def extract_schema_get(parameters):
 
     for parameter_features in parameters:
 
-        extracted_param_features = get_if_present_else_none(Parameter._fields, parameter_features)
-        extracted_parameters.append(Parameter(**extracted_param_features))
+        extracted_param_features = get_if_present_else_none(parameter_fields, parameter_features)
+        extracted_parameters.append(extracted_param_features)
 
     return extracted_parameters
 
@@ -51,15 +54,21 @@ def extract_schema(request_params, swagger_spec):
                 # params defined in definitions
                 if '$ref' in params:
                     extracted_nested_schema = extract(params)
-                    parameters.append(extracted_nested_schema)
+                    is_required = request_name in inner_schema.get('required', [])
+                    params['required'] = is_required
+                    params['name'] = request_name
+                    params['type'] = 'object'
+                    params['nested'] = extracted_nested_schema
+                    param_dict = get_if_present_else_none(parameter_fields, params)
+                    parameters.append(param_dict)
                     continue
                 else:
 
                     is_required = request_name in inner_schema.get('required', [])
                     params['required'] = is_required
                     params['name'] = request_name
-                    param_dict = get_if_present_else_none(Parameter._fields, params)
-                    parameters.append(Parameter(**param_dict))
+                    param_dict = get_if_present_else_none(parameter_fields, params)
+                    parameters.append(param_dict)
 
             return parameters
 
@@ -68,20 +77,8 @@ def extract_schema(request_params, swagger_spec):
     return extracted_schema
 
 
-def extract_spec_json(file):
-    cwd = os.getcwd()
-    spec_dict = json.loads(open(cwd+file, 'r').read())
-    config = {
-        'validate_requests': False,
-        'use_models': False,
-    }
-
-    swagger_spec = Spec.from_dict(spec_dict, config=config)
-    swagger_spec = swagger_spec.spec_dict
-    return swagger_spec
-
-
 def extract_requests(swagger_spec):
+
     requests = []
 
     for path in swagger_spec['paths']:
@@ -100,11 +97,11 @@ def extract_requests(swagger_spec):
 
                         extracted_parameters = extract_schema_get(parameters)
 
-                        requests.append(Request(path=path,
-                                                name=name,
-                                                type=request_type,
-                                                parameters=extracted_parameters,
-                                                description=description))
+                        requests.append({'path': path,
+                                         'name': name,
+                                         'type': request_type.upper(),
+                                         'parameters': extracted_parameters,
+                                         'description': description})
 
                 # possible to have get request without params
                 if request_type == 'post':
@@ -112,26 +109,22 @@ def extract_requests(swagger_spec):
                         for request_params in request_info['parameters']:
 
                             if request_params['in'] == 'body':
-                                parameters = extract_schema(request_params, swagger_spec)
-                                requests.append(Request(path=path,
-                                                        name=name,
-                                                        type=request_type,
-                                                        parameters=parameters,
-                                                        description=description))
+                                extracted_parameters = extract_schema(request_params, swagger_spec)
+                                requests.append({'path': path,
+                                                 'name': name,
+                                                 'type': request_type.upper(),
+                                                 'parameters': extracted_parameters,
+                                                 'description': description})
 
     return requests
 
 
-def upload_swagger(file_name):
-
-    swagger_spec = extract_spec_json(file_name)
+def upload_swagger(swagger_spec):
 
     if 'schemes' in swagger_spec:
-
         schemes = swagger_spec['schemes']
         if len(schemes) != 1 or 'https' not in schemes:
             print('Penelope only accepts https scheme and no other schemes')
-
 
     info = swagger_spec['info']
 
@@ -142,11 +135,7 @@ def upload_swagger(file_name):
                   'host': swagger_spec['host'],
                   'base_path': swagger_spec['basePath']}
 
-    param_dict = get_if_present_else_none(Component._fields, spec_props)
-    param_dict['requests'] = extract_requests(swagger_spec)
-    component = Component(**param_dict)
+    component_dict = get_if_present_else_none(component_fields, spec_props)
+    component_dict['requests'] = extract_requests(swagger_spec)
 
-    a = 1
-
-
-upload_swagger('/swagger.json')
+    return component_dict

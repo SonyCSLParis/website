@@ -1,24 +1,21 @@
 {% load staticfiles %}
 
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-      integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
-      crossorigin="anonymous">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
-      integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
-      crossorigin="anonymous">
+<script type="text/javascript" src="{% static 'jquery-3.3.1.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+<script type="text/javascript" src="{% static 'bootstrap-dropdown.js' %}"></script>
+<script type="text/javascript" src="{% static 'bootstrap.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'bootstrap-grid.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'bootstrap-reboot.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'bootstrap.css' %}" />
 
 {# Make sure to load our css after bootstrap to enable overriding. #}
-
-<link rel="stylesheet" href="/static/common.css">
+<link rel="stylesheet" type="text/css" href="{% static 'common.css' %}" />
 
 <body>
     <div class="page-header">
         Penelope
     </div>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
     {% block content %}
     {% endblock %}
 

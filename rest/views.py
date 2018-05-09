@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import requests
 from django.core import serializers
-from browser.models import Request
+from browser.models import Request, ComponentSpecification, Parameter
 from pipeline.models import Pipe, Pipeline
 import json
 import datetime
@@ -251,3 +251,49 @@ def move_down_pipe(request):
         except:
 
             return Response({"message": "couldn't process request"})
+
+
+@api_view(['PUT'])
+def save_component(request):
+    if request.method == 'PUT':
+        component_spec = json.loads(request.body)
+
+        requests = component_spec['requests']
+        del component_spec['requests']
+
+        component = ComponentSpecification.objects.create(**component_spec)
+        component.save()
+
+        for request in requests:
+
+            request_params = request['parameters']
+            del request['parameters']
+
+            request['component'] = component
+            request_inst = Request.objects.create(**request)
+            request_inst.component = component
+            request_inst.save()
+
+            def add_params(request_params, parent_param=None):
+
+                for parameter in request_params:
+
+                    if 'nested' in parameter:
+                        nested_params = parameter['nested']
+                        del parameter['nested']
+                    else:
+                        nested_params = None
+
+                    param_instance = Parameter.objects.create(**parameter)
+                    request_inst.parameters.add(param_instance)
+
+                    if parent_param:
+                        parent_param.nested.add(param_instance)
+
+                    if nested_params:
+                        add_params(nested_params, param_instance)
+
+            add_params(request_params)
+
+        return Response({"message": "success"})
+

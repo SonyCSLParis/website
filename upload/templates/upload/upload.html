@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+    <h2>Upload component specification</h2>
+    {% if form.errors %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+       {% csrf_token %}
+        <div class="input-group input-group-sm mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-sm">Name</span>
+          </div>
+          <input name='name' type="text" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-sm">File</span>
+            </div>
+            <div class="custom-file">
+                <input type="file" name="file" class="custom-file-input" id="inputGroupFile02"/>
+                <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
+            </div>
+            <div class="input-group-append">
+
+                <button class="btn btn-primary">Upload</button>
+            </div>
+        </div>
+        <script>
+            $('#inputGroupFile02').on('change',function(){
+                //get the file name
+                var fileName = $(this).val();
+                //replace the "Choose a file" label
+                $(this).next('.custom-file-label').html(fileName);
+            })
+        </script>
+
+     </form>
+
+{% endblock %}

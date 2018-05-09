@@ -20,5 +20,6 @@ urlpatterns = [
     path('browser/', include('browser.urls')),
     path('pipeline/', include('pipeline.urls')),
     path('rest/', include('rest.urls')),
+    path('upload/', include('upload.urls')),
     path('admin/', admin.site.urls),
 ]
