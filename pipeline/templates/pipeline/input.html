@@ -31,7 +31,7 @@
                         {% else %}
                             <div class= "input_field"><label>{{ key }}: <input type="text"  name={{"param-"|strcat:key}} value="{{val}}" form="form{{pipe.id}}"/> </label> </div>
                         {% endif %}
-                        <input type='hidden' name={{"type-"|strcat:key}}  value="{{pipe.request.parameters|get_item:key}}" form="form{{pipe.id}}" />
+                        <input type='hidden' name={{"type-"|strcat:key}}  value="{{pipe.request.parameters|find_param_type:key}}" form="form{{pipe.id}}" />
                     {% endfor %}
                 </div>
                 <input type='hidden' name="pipe_id" value="{{ pipe.pk }}" />

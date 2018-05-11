@@ -1,0 +1,18 @@
+{% load app_filters %}
+{% load static %}
+
+<div class="btn-group" role="group">
+    <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">+</button>
+
+    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+        {% for request in pipeline.requests.all %}
+            <a class ="dropdown-item" href="#" id='add-after-empty-{{request.id}}'>{{ request.name}}</a>
+            <script>
+                  var create_pipe_url = '{% url 'rest:create_pipe' %}';
+                  var get_input_output_url = '{% url 'pipeline:input_output' %}';
+                  add_pipe('empty', {{ pipeline.id }}, {{ request.id }}, create_pipe_url, get_input_output_url)
+            </script>
+        {% endfor %}
+    </div>
+</div>

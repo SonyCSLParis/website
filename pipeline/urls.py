@@ -11,4 +11,6 @@ urlpatterns = [
     path('input', views.InputDetailView.as_view(), name='input'),
     path('input_output', views.InputOutputDetailView.as_view(), name='input_output'),
     path('input_output/<str:pipeline_pk>/<str:pipe_pk>', views.InputOutputDetailView.as_view(), name='input_output'),
+    path('empty_pipeline/', views.EmptyPipeView.as_view(), name='empty_pipeline'),
+    path('empty_pipeline/<str:pipeline_pk>/', views.EmptyPipeView.as_view(), name='empty_pipeline'),
     ]

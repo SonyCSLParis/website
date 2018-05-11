@@ -1,7 +1,10 @@
 function add_pipe(pipe_id, pipeline_id, request_id, create_pipe_url, input_output_url) {
-    jQuery('#add-after-'+pipe_id).click(function (e) {
+    console.log('js called');
+    $('#add-after-'+pipe_id+'-'+request_id).click(function (e) {
+        console.log('jquery called');
         //do something
         e.preventDefault();
+
         console.log('clicked on ' + 'add-pipe-{{pipe.id}}');
         var request_data = {'pipe_id': pipe_id,
                             'pipeline_id': pipeline_id,
@@ -42,8 +45,11 @@ function add_pipe(pipe_id, pipeline_id, request_id, create_pipe_url, input_outpu
 
     function handle_fetched_new_pipe_success(response) {
         console.log('fetched html');
-        console.log('adding after #pipe' + pipe_origin);
-        $('#pipe' + pipe_origin).after(response);
+        console.log('adding after #pipe-' + pipe_origin);
+        $('#pipe-' + pipe_origin).after(response);
+        if(pipe_origin === 'empty') {
+            $("#pipe-empty").remove();
+        }
     }
 
     function handle_fetched_new_pipe_failure(response) {
@@ -52,9 +58,9 @@ function add_pipe(pipe_id, pipeline_id, request_id, create_pipe_url, input_outpu
     }
 }
 
-function delete_pipe(pipe_id, rest_url) {
+function delete_pipe(pipe_id, rest_url, pipeline_id, empty_pipeline_url) {
 
-    jQuery("#delete_pipe_" + pipe_id).click(function (e) {
+    $("#delete_pipe_" + pipe_id).click(function (e) {
         e.preventDefault();
         var request_data = {};
         request_data['pipe_id'] = pipe_id;
@@ -65,7 +71,17 @@ function delete_pipe(pipe_id, rest_url) {
             dataContent: "json",
             data: JSON.stringify(request_data),
             success: function (response) {
-                $("#pipe" + response['deleted_pipe']).remove();
+                $("#pipe-" + response['deleted_pipe']).remove();
+                // check whther deletion of this would result in no more pipes
+                if (!$(".pipe")[0]){
+                    $.ajax({
+                        type: "GET",
+                        url: empty_pipeline_url+pipeline_id,
+                        success: function(response){
+                            console.log('adding empty pipe options')
+                            $('#pipeline-details').after(response);}
+                    });
+                }
             },
             error: function (response) {
                 console.log('failed to remove pipe' + response['deleted_pipe'])
@@ -77,7 +93,7 @@ function delete_pipe(pipe_id, rest_url) {
 
 function move_up_pipe(pipe_id, pipeline_id, rest_url) {
 
-    jQuery("#move_up_pipe_" + pipe_id).click(function (e) {
+    $("#move_up_pipe_" + pipe_id).click(function (e) {
         e.preventDefault();
         var request_data = {};
         request_data['pipe_id'] = pipe_id;
@@ -95,10 +111,10 @@ function move_up_pipe(pipe_id, pipeline_id, rest_url) {
                 console.log(response);
                 pipe_origin_id = response['pipe_origin_id'];
                 pipe_swap_id = response['pipe_swap_id'];
-                console.log("#pipe" +pipe_origin_id)
-                console.log("#pipe"+pipe_swap_id)
+                console.log("#pipe-" +pipe_origin_id)
+                console.log("#pipe-"+pipe_swap_id)
 
-                $("#pipe" +pipe_origin_id).after($("#pipe"+pipe_swap_id));
+                $("#pipe-" +pipe_origin_id).after($("#pipe-"+pipe_swap_id));
                // $("#pipe" + response['deleted_pipe']).remove();$("#element1").before($("#element2"));
             },
             error: function (response) {
@@ -111,7 +127,7 @@ function move_up_pipe(pipe_id, pipeline_id, rest_url) {
 
 function move_down_pipe(pipe_id, pipeline_id, rest_url) {
 
-    jQuery("#move_down_pipe_" + pipe_id).click(function (e) {
+    $("#move_down_pipe_" + pipe_id).click(function (e) {
         e.preventDefault();
         var request_data = {};
         request_data['pipe_id'] = pipe_id;
@@ -129,10 +145,10 @@ function move_down_pipe(pipe_id, pipeline_id, rest_url) {
                 console.log(response);
                 pipe_origin_id = response['pipe_origin_id'];
                 pipe_swap_id = response['pipe_swap_id'];
-                console.log("#pipe" +pipe_origin_id)
-                console.log("#pipe"+pipe_swap_id)
+                console.log("#pipe-" +pipe_origin_id)
+                console.log("#pipe-"+pipe_swap_id)
 
-                $("#pipe" +pipe_swap_id).after($("#pipe"+pipe_origin_id));
+                $("#pipe-" +pipe_swap_id).after($("#pipe-"+pipe_origin_id));
             },
             error: function (response) {
                 console.log('failed to remove pipe' + response['deleted_pipe'])

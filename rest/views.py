@@ -167,29 +167,42 @@ def create_pipe(request):
         pipe_id = request_data['pipe_id']  # use this to decide after which pipe to create new pipe
         request_id = request_data['request_id']
         pipeline_id = request_data['pipeline_id']
+
         pipeline = Pipeline.objects.get(pk=pipeline_id)
         pipeline.local_id_gen += 1
         pipeline.save()
 
-        pipe = Pipe.objects.get(pk=pipe_id)
-        pipe_position = pipe.position
-        next_postition = pipe_position + 1  # this is the position the new pipe will occupy
+        if pipe_id != 'empty':
+            pipe = Pipe.objects.get(pk=pipe_id)
+            pipe_position = pipe.position
+            next_postition = pipe_position + 1  # this is the position the new pipe will occupy
 
-        # get all pipes at this position and beyond and increment them by 1
-        pipes = Pipe.objects.filter(position__gte=next_postition)
+            # get all pipes at this position and beyond and increment them by 1
+            pipes = Pipe.objects.filter(position__gte=next_postition)
 
-        for pipe in pipes:
-            pipe.position += 1
-            pipe.save()
+            for pipe in pipes:
+                pipe.position += 1
+                pipe.save()
+        else:
+            next_postition = 0  # start from 0
 
         request = Request.objects.get(pk=request_id)
-        parameters = dict(request.parameters)
+        parameters = request.parameters.all()
+
+        # duplicate parameter from the request specification for the pipe.
+        for parameter in parameters:
+            parameter.pk = None  # clearing pk and saving will clone the object
+            parameter.save()
+
         new_pipe = Pipe.objects.create(pipe_line=pipeline,
                                        request=request,
-                                       parameters=parameters,
                                        output='',
                                        local_id=pipeline.local_id_gen,
                                        position=next_postition)
+
+        for parameter in parameters:
+            new_pipe.parameters.add(parameter)
+
         new_pipe.save()
         json_new_pipe = json.loads(serializers.serialize('json', [new_pipe]))
         json_new_pipe = json_new_pipe[0]

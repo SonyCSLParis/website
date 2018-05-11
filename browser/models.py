@@ -29,6 +29,7 @@ class Parameter(models.Model):
     enum = models.TextField(null=True, blank=True)
     required = models.TextField()
     default = models.TextField(null=True, blank=True)
+    value = models.TextField(null=True, blank=True)
 
 
 class Request(models.Model):

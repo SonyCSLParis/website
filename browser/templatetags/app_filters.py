@@ -4,7 +4,9 @@ from pygments.lexers import get_lexer_by_name
 from pygments.formatters import get_formatter_by_name
 from pygments import highlight
 from django.utils.safestring import mark_safe
+import textwrap
 from picklefield.fields import PickledObjectField
+
 
 @register.filter(name='json')
 def convert_to_json(json_string):
@@ -23,9 +25,37 @@ def convert_to_json(json_string):
     return mark_safe(style + response)
 
 
+@register.filter(name='markdown')
+def convert_to_markdown(string):
+    response = "\n".join(textwrap.wrap(string, width=100))
+
+    # Get the Pygments formatter
+    formatter = get_formatter_by_name('html', style='colorful')
+
+    # Highlight the data
+    response = highlight(response, get_lexer_by_name('md'), formatter)
+
+    # Get the stylesheet
+    style = "<style>" + formatter.get_style_defs() + "</style><br>"
+
+    # Safe the output
+    return mark_safe(style + response)
+
+
+
+
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key)
+
+
+@register.filter('find_param_type')
+def find_param_type(parameters, key):
+
+    for parameter in parameters:
+
+        if key == parameter.name:
+            return parameter.type
 
 
 @register.filter('json_dumps')

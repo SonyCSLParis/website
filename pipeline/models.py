@@ -1,6 +1,5 @@
 from django.db import models
-from browser.models import Request
-from picklefield.fields import PickledObjectField
+from browser.models import Request, Parameter
 from django.contrib import admin
 from django import forms
 import json
@@ -29,7 +28,7 @@ class Pipe(models.Model):
     position = models.IntegerField()  # position in list of pipes used for ordering on page
     local_id = models.IntegerField()  # the id for the pipe locally also the id given to the output
 
-    parameters = PickledObjectField(default={}, editable=True)
+    parameters = models.ManyToManyField(Parameter, related_name="has_params", null=True, blank=True)
 
     @property
     def short_output(self):
@@ -62,6 +61,6 @@ class PipeForm(forms.ModelForm):
 
 
 class PipeAdmin(admin.ModelAdmin):
-    list_display = ('pipe_line', 'request', 'parameters', 'run_time', 'position', 'local_id',
+    list_display = ('pipe_line', 'request', 'run_time', 'position', 'local_id',
                     'short_output', 'output_time')
     form = PipeForm

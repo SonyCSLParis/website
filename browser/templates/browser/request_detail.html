@@ -11,11 +11,48 @@
         <div class="request grid-container">
            <div class="grid-item request-type {{ request.type }}">{{ request.type }}</div>
            <div class="grid-item request-name">{{ request.name }}</div>
-            <div class ="grid-item">parameters: {{request.parameters|json}}</div>
+                {% for param in parameters%}
+                    <div class="params-container">
+                            {% for k, v in param.items%}
+                                {% if k == 'nested' %}
+                                    <div class="row">
+                                        <div class="param-name col-xs-2 col-sm-2">{{k}}:</div>
+                                    </div>
+                                    {% for nested_parameters in v %}
+                                        {% for nested_k, nested_v in nested_parameters.items%}
+                                            <div class="params-container-nested-1 row">
+
+                                                <div class="param-name col-xs-2 col-sm-2"><p class="nested-marker">-&ensp;</p>{{nested_k}}:</div>
+                                                {% if nested_k == 'example' %}
+                                                    <div class="param-value col-xs-10 col-sm-10 ">{{nested_v|json}}</div>
+                                                {% elif  nested_k == 'description'%}
+                                                    <div class="param-value col-xs-10 col-sm-10 ">{{nested_v|markdown}}</div>
+                                                {% else %}
+                                                    <div class="param-value col-xs-10 col-sm-10 ">{{nested_v}}</div>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="param-container row">
+                                      <div class="param-name col-xs-2 col-sm-2">{{k}}:</div>
+                                      {% if k == 'example' %}
+                                          <div class="param-value col-xs-10 col-sm-10 ">{{v|json}}</div>
+                                      {% elif  k == 'description'%}
+                                          <div class="param-value col-xs-10 col-sm-10 ">{{v|markdown}}</div>
+                                      {% else %}
+                                          <div class="param-value col-xs-10 col-sm-10 ">{{v}}</div>
+                                      {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                    <hr/>
+                {%  endfor %}
    </div>
 
    <p>{{ request.request_description|linebreaksbr}}</p>
 
    </div>
 
-{% endblock %}çpy
+{% endblock %}

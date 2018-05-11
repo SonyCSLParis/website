@@ -12,7 +12,7 @@
      </div>
     <div class="delete_pipe">
           <button type='button' id="delete_pipe_{{ pipe.id }}" class="btn btn-outline-secondary">-</button>
-          <script> delete_pipe({{ pipe.id }}, '{% url 'rest:request' %}') </script>
+          <script> delete_pipe({{ pipe.id }}, '{% url 'rest:request' %}', {{ pipeline.id }}, '{% url 'pipeline:empty_pipeline' %}') </script>
      </div>
     <div class="btn-group" role="group">
         <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle"
@@ -20,10 +20,10 @@
 
         <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
             {% for request in pipeline.requests.all %}
-                <a class ="dropdown-item" href="#" id='add-after-{{pipe.id}}'>{{ request.name}}</a>
+                <a class ="dropdown-item" href="#" id='add-after-{{pipe.id}}-{{ request.id }}'>{{ request.name}}</a>
                 <script>
-                      create_pipe_url = '{% url 'rest:create_pipe' %}';
-                      get_input_output_url = '{% url 'pipeline:input_output' %}';
+                      var create_pipe_url = '{% url 'rest:create_pipe' %}';
+                      var get_input_output_url = '{% url 'pipeline:input_output' %}';
                       add_pipe({{ pipe.id }}, {{ pipeline.id }}, {{ request.id }}, create_pipe_url, get_input_output_url)
                 </script>
             {% endfor %}

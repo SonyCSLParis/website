@@ -1,12 +1,11 @@
 {% load staticfiles %}
 
 <script type="text/javascript" src="{% static 'jquery-3.3.1.js' %}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-<script type="text/javascript" src="{% static 'bootstrap-dropdown.js' %}"></script>
-<script type="text/javascript" src="{% static 'bootstrap.js' %}"></script>
-<link rel="stylesheet" type="text/css" href="{% static 'bootstrap-grid.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'bootstrap-reboot.css' %}" />
+<script type="text/javascript" src="{% static 'tether.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'popper.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bootstrap.min.js' %}"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.css' %}" />
+
 
 {# Make sure to load our css after bootstrap to enable overriding. #}
 <link rel="stylesheet" type="text/css" href="{% static 'common.css' %}" />

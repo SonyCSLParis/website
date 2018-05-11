@@ -163,6 +163,14 @@ class InputDetailView(generic.TemplateView):
         context['pipe'] = Pipe.objects.get(pk=kwargs['pk'])
         return context
 
+class EmptyPipeView(generic.TemplateView):
+    template_name = 'pipeline/empty_pipeline.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pipeline'] = Pipeline.objects.get(pk=kwargs['pipeline_pk'])
+        return context
+
 
 class InputOutputDetailView(generic.TemplateView):
     template_name = 'pipeline/input_output.html'

@@ -1,3 +1,27 @@
 li a {
     color: green;
 }
+
+.params-container {
+}
+
+.params-container-nested-1 {
+    margin-left: 20px;
+}
+
+
+.param-name {
+    font-weight: bold;
+    text-align: justify;
+    padding-left: 20px;
+}
+
+.param-value {
+    font-style: italic;
+    padding-left: 20px;
+}
+
+.nested-marker {
+    color: #9fabb4;
+    float: left;
+}
