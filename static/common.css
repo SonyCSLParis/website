@@ -58,6 +58,7 @@
 
 
 .request-name {
-    height: 20px;
-    display: inline-block;
+    border-bottom:1px solid #d1ccd4;
+    margin-bottom: 20px;
+    padding-left: 10px;
     }

@@ -128,6 +128,55 @@ def format_error_output(errors):
     return "\n".join(list(errors.values()))
 
 
+def extract_fields(dictionary):
+
+        parameters = {}
+
+        for k, v in dictionary.items():
+            k = k if k != 'enum' else 'options'
+
+            if k not in ['_state'] and v is not None:
+                parameters[k] = v
+
+        return parameters
+
+
+def extract_parameters(objects, is_nested=False):
+
+    internal_parameters = []
+
+    for obj in objects:
+
+        nested_params = obj.nested.all()
+        if nested_params:
+            nested_params = extract_parameters(nested_params, True)
+
+        param_dict = obj.__dict__
+        if nested_params:
+            param_dict['nested'] = nested_params
+
+        internal_parameters.append(extract_fields(param_dict))
+
+    return internal_parameters
+
+
+def populate_params(sorted_pipe_objs):
+
+    pipes = []
+
+    for pipe in sorted_pipe_objs:
+        parent_parameters = pipe.parameters.filter(sub_param=None)
+        param_dict = extract_parameters(parent_parameters)
+        request_dict = extract_fields(pipe.request.__dict__)
+        request_dict['component'] = pipe.request.component.__dict__
+        pipe_dict = extract_fields(pipe.__dict__)
+        pipe_dict['parameters'] = param_dict
+        pipe_dict['request'] = request_dict
+        pipes.append(pipe_dict)
+
+    return pipes
+
+
 class PipelineView(generic.DetailView):
     model = Pipeline
     template_name = 'pipeline/pipeline.html'
@@ -135,7 +184,10 @@ class PipelineView(generic.DetailView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        context['sorted_pipes'] = [pipe for pipe in Pipe.objects.filter(pipe_line=context["pipeline"]).order_by('position')]
+        sorted_pipe_objs = [pipe for pipe in Pipe.objects.filter(pipe_line=context["pipeline"]).order_by('position')]
+
+        populate_params(sorted_pipe_objs)
+        context['pipes'] = populate_params(sorted_pipe_objs)
 
         return context
 
@@ -163,6 +215,7 @@ class InputDetailView(generic.TemplateView):
         context['pipe'] = Pipe.objects.get(pk=kwargs['pk'])
         return context
 
+
 class EmptyPipeView(generic.TemplateView):
     template_name = 'pipeline/empty_pipeline.html'
 
@@ -177,8 +230,11 @@ class InputOutputDetailView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['pipe'] = Pipe.objects.get(pk=kwargs['pipe_pk'])
         context['pipeline'] = Pipeline.objects.get(pk=kwargs['pipeline_pk'])
+
+        pipe_data = populate_params([Pipe.objects.get(pk=kwargs['pipe_pk'])])
+        context['pipe'] = pipe_data[0]
+
         return context
 
 #
@@ -195,7 +251,7 @@ class InputOutputDetailView(generic.TemplateView):
 #         if form.is_valid():
 #             # process the data in form.cleaned_data as required (here we just write it to the model due_back field)
 #             input_inst.input = form.cleaned_data['input']
-#             input_inst.save()
+#             input_inst.data()
 #
 #     # If this is a GET (or any other method) create the default form.
 #     else:

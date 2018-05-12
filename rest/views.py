@@ -6,9 +6,11 @@ from browser.models import Request, ComponentSpecification, Parameter
 from pipeline.models import Pipe, Pipeline
 import json
 import datetime
+from django.urls import reverse
 
 param_prefix = 'param-'
 type_prefix = 'type-'
+id_prefix = 'id-'
 
 
 def convert_number(val):
@@ -66,7 +68,6 @@ def convert_to_format(input_dict):
     param_keys = {}
 
     for key, val in local_dict.items():
-
         if param_prefix in key:
             param_keys[key] = val
 
@@ -74,19 +75,19 @@ def convert_to_format(input_dict):
     params_converter_types = {}
 
     for key, val in local_dict.items():
-
         if type_prefix in key:
             param_string = key.replace(type_prefix, '')
             params_converter_funcs[param_string] = converter_funcs[val]
             params_converter_types[param_string] = val
 
-    converted_params = {}
+    converted_params = []
 
     for key in param_keys:
         param_string = key.replace(param_prefix, '')
+        id = local_dict['id-'+param_string]
         value = local_dict[key]
         try:
-            converted_params[param_string] = params_converter_funcs[param_string](value)
+            converted_params.append((param_string, id, params_converter_funcs[param_string](value)))
         except Exception as e:
             errors[param_string] = 'parameter error: {} could not be parsed as {} for parameter {}. ' \
                                    'Error message is {}.'.format(value,
@@ -101,11 +102,10 @@ def save_parameters(pipe_id, parameters, validation_errors):
 
     pipe_object = Pipe.objects.get(pk=pipe_id)
 
-    # make all values empty that had errors
-    for param in validation_errors:
-        parameters[param] = ''
-
-    pipe_object.parameters = parameters
+    for _, id, value in parameters:
+        param_obj = Parameter.objects.get(pk=id)
+        param_obj.value = value
+        param_obj.save()
 
     now = datetime.datetime.now()
     pipe_object.input_time = now
@@ -129,9 +129,11 @@ def format_error_output(errors):
 @api_view(['PUT'])
 def external_request(request):
     if request.method == 'PUT':
-        request_data = json.loads(request.body)
+        data = json.loads(request.body)
+
         headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-        r = requests.post(request_data['request_url'], json=request_data, headers=headers)
+        # we require all external requests use https
+        r = requests.post('https://'+data['request_url'], json=data['request_data'], headers=headers)
         return Response({"output": json.loads(r.content)})
 
 
@@ -142,7 +144,9 @@ def save_input(request):
         mapped_params, validation_errors = convert_to_format(request_data)
         save_parameters(request_data['pipe_id'], mapped_params, validation_errors)
 
-        return Response({"data_saved": mapped_params})
+        request_data = {x[0]: x[2] for x in mapped_params}
+
+        return Response({"request_data": request_data})
 
 
 @api_view(['PUT'])
@@ -187,12 +191,26 @@ def create_pipe(request):
             next_postition = 0  # start from 0
 
         request = Request.objects.get(pk=request_id)
-        parameters = request.parameters.all()
-
+        parameters = request.parameters.filter(sub_param=None)
         # duplicate parameter from the request specification for the pipe.
-        for parameter in parameters:
-            parameter.pk = None  # clearing pk and saving will clone the object
-            parameter.save()
+        def duplicate_parameters(internal_parameters):
+            for parameter in internal_parameters:
+
+                nested = parameter.nested.all()
+                if nested:
+                    duplicate_parameters(nested)
+
+                # clearing pk and saving will clone the object
+                parameter.pk = None
+                parameter.save()
+
+                # give nested params
+                if nested:
+                    for nested_param in nested:
+                        parameter.nested.add(nested_param)
+
+
+        duplicate_parameters(parameters)
 
         new_pipe = Pipe.objects.create(pipe_line=pipeline,
                                        request=request,

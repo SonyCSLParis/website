@@ -61,14 +61,45 @@
 }
 
 .input_field {
-    display:inline-block;
     margin: 10px;
+}
+
+.input_field input{
+    width: 100%;
+}
+
+
+.nested_input {
+    margin-right: 20px;
+    margin-left: 40px;
+    margin-bottom: 20px;
+    border:1px solid #d1ccd4;
+    padding: 10px;
+}
+
+.required_name{
+    font-weight:bold;
 }
 
 .input_fields {
     position: relative;
-     text-align: center;
+     text-align: left;
 }
+
+.tophr{
+    border: 5px;
+    height: 5px;
+    border-top: 1px solid rgb(160, 160, 160);
+    margin: 0px;
+}
+
+.bottomhr{
+    border: 5px;
+     height: 5px;
+     border-top: 1px solid rgb(160, 160, 160);
+    margin: 0px;
+}
+
 
 .input_row {
     position: relative;

@@ -38,7 +38,7 @@ function add_pipe(pipe_id, pipeline_id, request_id, create_pipe_url, input_outpu
         console.log(new_pipe_id);
         $.ajax({
             type: "GET",
-            url: input_output_url + '/'+ pipeline_id +'/' +new_pipe_id,
+            url: input_output_url + '/'+ pipeline_id +'/' + new_pipe_id,
             success: handle_fetched_new_pipe_success
         });
     }

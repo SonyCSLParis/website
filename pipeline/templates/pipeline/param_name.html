@@ -1,0 +1,5 @@
+{% if param.required is True %}
+    <div class="required_name">{{ param.name }}</div>
+{% else %}
+    {{ param.name }}
+{% endif %}

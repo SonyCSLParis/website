@@ -9,13 +9,13 @@ function getFormData($form){
     return indexed_array;
 }
 
-function run_form(form_id, pipe_id, rest_url, request_type, request_url, input_url, output_url) {
+function run_form(form_id, pipe_id, rest_url, request_url, input_url, output_url) {
     $(document).ready(function () {
         var $myForm = $('#'+form_id);
         $myForm.submit(function (event) {
             event.preventDefault();
             var $formData = getFormData($(this));
-            console.log('form submit');
+            console.log('input pipe id ' + pipe_id);
             console.log(JSON.stringify($formData));
             $.ajax({
                     // using put here so we can get the body of the
@@ -25,19 +25,19 @@ function run_form(form_id, pipe_id, rest_url, request_type, request_url, input_u
                     dataType: "json",
                     dataContent:"json",
                     data:JSON.stringify($formData),
-                    success: handle_save_input_success,
-                    error: handle_save_input_failure
+                    success: make_request,
+                    error: function(response){
+                        console.log('could not save input');
+                        console.log(response);
+                    }
                 });
         });
 
-        function handle_save_input_success(data) {
+        function make_request(data) {
 
             console.log('saved input');
-            console.log(data);
-            request_data = data['data_saved'];
-            request_data['request_url'] = request_url;
-            console.log(request_data)
-
+            data['request_url'] = request_url;
+            console.log('making request to ' + request_url);
             $('#input'+pipe_id).load(input_url + '/' + pipe_id);
 
             $.ajax({
@@ -47,7 +47,7 @@ function run_form(form_id, pipe_id, rest_url, request_type, request_url, input_u
                     url: rest_url,
                     dataType: "json",
                     dataContent:"json",
-                    data:JSON.stringify(request_data),
+                    data:JSON.stringify(data),
                     success: handleRequestSuccess,
                     error: handleRequestFailure
                     });
@@ -56,7 +56,6 @@ function run_form(form_id, pipe_id, rest_url, request_type, request_url, input_u
             function handleRequestSuccess(response){
 
                 console.log('request success');
-                console.log(response);
                 response['pipe_id'] = pipe_id;
                 $.ajax({
                       // using put here so we can get the body of the
@@ -86,14 +85,6 @@ function run_form(form_id, pipe_id, rest_url, request_type, request_url, input_u
                 console.log('request failure');
                 console.log(response);
            }
-        }
-
-        function handle_save_input_failure(jqXHR, textStatus, errorThrown) {
-
-            console.log('form failure');
-            console.log(jqXHR);
-            console.log(textStatus);
-            console.log(errorThrown);
         }
     })
 }
