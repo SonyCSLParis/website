@@ -7,10 +7,10 @@ from pipeline.models import Pipe, Pipeline
 import json
 import datetime
 from django.urls import reverse
+from core.pipeline import populate_pipes_params, get_request_params
 
 param_prefix = 'param-'
-type_prefix = 'type-'
-id_prefix = 'id-'
+val_prefix = 'val-'
 
 
 def convert_number(val):
@@ -32,7 +32,12 @@ def convert_obj(val):
 
 
 def convert_array(val):
-    parsed_json = json.loads(val)
+
+    try:
+        parsed_json = json.loads(val)
+    except Exception as e:
+        raise Exception('Could not parse json array from {}'.format(val))
+
     if type(parsed_json) != list:
         raise Exception("Provided JSON is not a valid array.")
 
@@ -41,15 +46,15 @@ def convert_array(val):
 
 def convert_bool(val):
 
-    if val.lower() in ["true", "1"]:
+    if val.lower() in ["true", "1", 'on']:
         return 1
-    elif val.lower() in ["false", "0"]:
+    elif val.lower() in ["false", "0", 'off']:
         return 0
 
     raise ValueError("Value could not be parsed into a boolean.")
 
 
-converter_funcs = {
+json_converter_funcs = {
     'number': convert_number,
     'boolean': convert_bool,
     'integer': convert_int,
@@ -58,53 +63,59 @@ converter_funcs = {
     'array': convert_array
 }
 
+from collections import namedtuple
+
+NamedParam = namedtuple('NamedParam', ['name', 'id', 'type', 'value', 'converter'])
+
 
 def convert_to_format(input_dict):
 
     errors = {}
+    params = []
 
     local_dict = {k: v for k, v in input_dict.items()}
 
-    param_keys = {}
+    for prefix_name, param_info in local_dict.items():
+        if param_prefix in prefix_name:
+            name, id, type = param_info.split()
+            value = local_dict.get(val_prefix+name)
+            params.append(NamedParam(name, id, type, value, json_converter_funcs[type]))
 
-    for key, val in local_dict.items():
-        if param_prefix in key:
-            param_keys[key] = val
-
-    params_converter_funcs = {}
-    params_converter_types = {}
-
-    for key, val in local_dict.items():
-        if type_prefix in key:
-            param_string = key.replace(type_prefix, '')
-            params_converter_funcs[param_string] = converter_funcs[val]
-            params_converter_types[param_string] = val
-
-    converted_params = []
-
-    for key in param_keys:
-        param_string = key.replace(param_prefix, '')
-        id = local_dict['id-'+param_string]
-        value = local_dict[key]
+    # now check if parameters are valid json
+    for param in params:
+        value = param.value
+        converter = param.converter
         try:
-            converted_params.append((param_string, id, params_converter_funcs[param_string](value)))
-        except Exception as e:
-            errors[param_string] = 'parameter error: {} could not be parsed as {} for parameter {}. ' \
-                                   'Error message is {}.'.format(value,
-                                                                 params_converter_types[param_string],
-                                                                 key,
-                                                                 e)
+            converted_value = converter(value)
 
-    return converted_params, errors
+        except Exception as e:
+            errors[param.name] = 'Parameter error: {} could not be parsed as {} for parameter {}.'\
+                                  .format(value, converter, param.name)
+            break
+
+    # remove errors that are due to required parameters
+    for param in params:
+        param_obj = Parameter.objects.get(pk=param.id)
+        is_required = convert_bool(param_obj.required)
+
+        if is_required and param.value == '':
+            errors[param.name] = 'Param {} is required but is empty'.format(param.name)
+        elif param.value == '':
+            # suppress any errors as val was not required so it being empty doesn't matter
+            # this shouldn't be neccesary if converters don't create an error from an empty string
+            if param.name in errors:
+                del errors[param.name]
+
+    return params, errors
 
 
 def save_parameters(pipe_id, parameters, validation_errors):
 
     pipe_object = Pipe.objects.get(pk=pipe_id)
 
-    for _, id, value in parameters:
-        param_obj = Parameter.objects.get(pk=id)
-        param_obj.value = value
+    for param in parameters:
+        param_obj = Parameter.objects.get(pk=param.id)
+        param_obj.value = param.value
         param_obj.save()
 
     now = datetime.datetime.now()
@@ -134,17 +145,26 @@ def external_request(request):
         headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
         # we require all external requests use https
         r = requests.post('https://'+data['request_url'], json=data['request_data'], headers=headers)
-        return Response({"output": json.loads(r.content)})
+
+        if r.status_code == 200:
+            return Response({"output": json.loads(r.content)})
+        else:
+            return Response({"output": r.status_code})
+
 
 
 @api_view(['PUT'])
 def save_input(request):
     if request.method == 'PUT':
         request_data = json.loads(request.body)
-        mapped_params, validation_errors = convert_to_format(request_data)
-        save_parameters(request_data['pipe_id'], mapped_params, validation_errors)
+        source_params, validation_errors = convert_to_format(request_data)
 
-        request_data = {x[0]: x[2] for x in mapped_params}
+        # we save the input the user put in as is
+        save_parameters(request_data['pipe_id'], source_params, validation_errors)
+
+        if not validation_errors:
+            pipe = Pipe.objects.get(pk=request_data['pipe_id'])
+            request_data = get_request_params(pipe)
 
         return Response({"request_data": request_data})
 
@@ -305,6 +325,10 @@ def save_component(request):
             request_inst.component = component
             request_inst.save()
 
+            def json_dump_val(param_dict):
+
+                return {key: json.dumps(val) for key, val in param_dict.items()}
+
             def add_params(request_params, parent_param=None):
 
                 for parameter in request_params:
@@ -315,7 +339,9 @@ def save_component(request):
                     else:
                         nested_params = None
 
-                    param_instance = Parameter.objects.create(**parameter)
+                    # we want to represent all values as json strings so we can deserialise them as objects later
+                    json_val_param = json_dump_val(parameter)
+                    param_instance = Parameter.objects.create(**json_val_param)
                     request_inst.parameters.add(param_instance)
 
                     if parent_param:

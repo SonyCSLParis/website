@@ -1,5 +1,13 @@
-<div class="col-xs-1 col-sm-1"></div>
-<div class={{ "col-xs-11 col-sm-11 output"}}>{{ pipe.output| safe  }}</div>
+{% load app_filters %}
+<div class="row">
+    {% if pipe.output != '' %}
+        <div class="col-xs-1 col-sm-1">output[{{ pipe.local_id }}]</div>
+    {% else %}
+        <div class="col-xs-1 col-sm-1"></div>
+    {% endif %}
+    <div class= "col-xs-11 col-sm-11 output">{{ pipe.output|json_from_string|safe  }}</div>
+</div>
+
 {% if pipe.output_time != None %}
    <div class="time-received">Received at: {{ pipe.output_time }}</div>
 {% endif %}

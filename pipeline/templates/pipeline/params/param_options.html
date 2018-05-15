@@ -1,0 +1,7 @@
+<select class="form-control" id="{{"val-"|strcat:param.id}}" name="{{"val-"|strcat:param.name}}"
+                        aria-describedby="{{"example-"|strcat:param.id}}" form="form{{pipe.id}}">
+    {% for option in param.options %}
+         <option  {% ifequal option param.value %} {{ selected }} {% endifequal %}
+         >    {{ option }}</option>
+    {% endfor %}
+</select>

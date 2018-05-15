@@ -1,0 +1,6 @@
+{% load app_filters %}
+{% if param.required is True %}
+    <div class="required_name">{{ param.name|strip_double_quotes }}</div>
+{% else %}
+    {{ param.name }}
+{% endif %}

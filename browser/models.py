@@ -21,6 +21,9 @@ class ComponentSpecification(models.Model):
 
 class Parameter(models.Model):
 
+    def __str__(self):
+        return self.name + str(self.pk)
+
     name = models.TextField()
     type = models.TextField()
     nested = models.ManyToManyField('self', related_name='sub_param', symmetrical=False) #
@@ -30,6 +33,18 @@ class Parameter(models.Model):
     required = models.TextField()
     default = models.TextField(null=True, blank=True)
     value = models.TextField(null=True, blank=True)
+
+
+class ParameterForm(forms.ModelForm):
+
+    class Meta:
+        model = Parameter
+        fields = ['name', 'type', 'example', 'description',  'enum', 'required', 'default', 'value']
+
+
+class ParameterAdmin(admin.ModelAdmin):
+    list_display = ('name', 'type', 'example', 'description', 'enum', 'required', 'default', 'value')
+    form = ParameterForm
 
 
 class Request(models.Model):
@@ -70,24 +85,9 @@ class RequestForm(forms.ModelForm):
         model = Request
         fields = ['component', 'name', 'description', 'type', 'parameters', 'path']
 
-    def clean_parameters(self):
-         cleaned_data = super(RequestForm, self).clean()
-
-         try:
-             json_params = json.loads(cleaned_data['parameters'])
-         except:
-             return "Invalid JSON"
-
-         return json_params
-
-    def clean(self):
-        cleaned_data = super(RequestForm, self).clean()
-
-        return cleaned_data
 
 
 class RequestAdmin(admin.ModelAdmin):
     list_display = ('component', 'name', 'description', 'type', 'path')
-    list_editable = ('name', 'description', 'type', 'path')
     form = RequestForm
 

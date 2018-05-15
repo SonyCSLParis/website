@@ -1,5 +1,5 @@
 function add_pipe(pipe_id, pipeline_id, request_id, create_pipe_url, input_output_url) {
-    console.log('js called');
+
     $('#add-after-'+pipe_id+'-'+request_id).click(function (e) {
         console.log('jquery called');
         //do something

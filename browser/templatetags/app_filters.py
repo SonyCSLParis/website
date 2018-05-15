@@ -10,13 +10,35 @@ from picklefield.fields import PickledObjectField
 
 @register.filter(name='json')
 def convert_to_json(json_string):
-    response = json.dumps(json_string, sort_keys=True, indent=2)
+    response = json.dumps(json_string, indent=2)
 
     # Get the Pygments formatter
     formatter = get_formatter_by_name('html', style='colorful')
 
     # Highlight the data
     response = highlight(response, get_lexer_by_name('json'), formatter)
+
+    # Get the stylesheet
+    style = "<style>" + formatter.get_style_defs() + "</style><br>"
+
+    # Safe the output
+    return mark_safe(style + response)
+
+
+@register.filter(name='json_from_string')
+def convert_to_json(json_string):
+    try:
+        json_obj = json.loads(json_string)
+    except:
+        return ''
+
+    indented_json_string = json.dumps(json_obj, sort_keys=True, indent=2)
+
+    # Get the Pygments formatter
+    formatter = get_formatter_by_name('html', style='manni')
+
+    # Highlight the data
+    response = highlight(indented_json_string, get_lexer_by_name('json'), formatter)
 
     # Get the stylesheet
     style = "<style>" + formatter.get_style_defs() + "</style><br>"
@@ -47,6 +69,14 @@ def convert_to_markdown(string):
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key)
+
+
+@register.filter('strip_double_quotes')
+def strip_double_quotes(string):
+
+
+    return string.strip('\"')
+
 
 
 @register.filter('find_param_type')

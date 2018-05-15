@@ -68,6 +68,12 @@
     width: 100%;
 }
 
+.large-checkbox {
+
+    width: 19px;
+    height: 19px;
+    margin-left: -20px;
+}
 
 .nested_input {
     margin-right: 20px;
@@ -106,8 +112,18 @@
      text-align: center;
 }
 
+.highlight pre {
+    word-wrap: normal;
+}
+
+.highlight pre code {
+    white-space: pre;
+}
+
 .output {
     min-height: 100px;
+    max-height: 300px;
+    overflow: scroll;
 }
 
 .time-run {

@@ -1,0 +1,41 @@
+{% if param.type == 'object' %}
+    <label class='col-sm-2 col-form-label col-form-label-sm'  title="{{ param.description }}">{% include 'pipeline/params/param_name.html' %} </label>
+    <div class="nested_input">
+        {% for param in param.nested %}
+            {% include "pipeline/params/param.html" %}
+        {% endfor %}
+    </div>
+
+{% else %}
+
+    <input type='hidden' name="{{"param-"|strcat:param.name}}" value="{{param.name}} {{param.id}} {{param.type}}" form="form{{pipe.id}}"/>
+
+    <div class="form-group row">
+        <label class='col-sm-2 col-form-label col-form-label-sm' title="{{ param.description }}"
+               for="{{"val-"|strcat:param.id}}" >
+            {% include 'pipeline/params/param_name.html' %}
+        </label>
+        <div class="col-10">
+            {% if param.options %}
+                {% include 'pipeline/params/param_options.html' %}
+            {% elif param.type == 'boolean' %}
+                {% include 'pipeline/params/param_boolean.html' %}
+            {% else %}
+                {% include 'pipeline/params/param_text.html' %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2">
+        </div>
+        <div class="col-10">
+         {% if param.options != None or param.type != 'boolean' %}
+            {% if param.example %}
+               <small class="form-text text-muted" id="{{"example-"|strcat:param.id}}">{{ param.example|strip_double_quotes }}</small>
+            {% endif %}
+         {% endif %}
+        </div>
+    </div>
+
+{% endif %}
