@@ -3,7 +3,10 @@
 {% block content %}
     <script type="text/javascript" src="{% static 'pipeline/run_input.js' %}"></script>
     <script type="text/javascript" src="{% static 'pipeline/pipeline.js' %}"></script>
+    <script type="text/javascript" src="{% static 'pipeline/parsley.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'pipeline/custom_parsley_validators.js' %}"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'pipeline/pipeline.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'pipeline/validation.css' %}" />
     {% load app_filters %}
     <div class="white-board-back">
         <div class="white-board">
@@ -19,3 +22,4 @@
         </div>
     </div>
 {% endblock %}
+

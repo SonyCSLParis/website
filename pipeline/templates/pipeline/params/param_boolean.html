@@ -1,14 +1,14 @@
 <div class="form-control-lg">
     {% if param.value == 'true' %}
-        <input type="checkbox" class="form-check-input large-checkbox" id="{{"val-"|strcat:param.id}}" form="form{{pipe.id}}"
-           aria-describedby="{{"example-"|strcat:param.id}}" name="{{"val-"|strcat:param.name}}" checked data-val="true" value="true">
+        <input type="checkbox" class="form-check-input large-checkbox" {% include 'pipeline/params/param_meta.html' %}
+        checked>
     {% else %}
         {% comment %}
             For each checkbox have to post a hidden input with the same name otherwise no value is submitted on form post.
             This is a bit annoying but it allows the checkboxes to be treated in the same way as other inputs on the server
             side.
         {% endcomment %}
-        <input type="checkbox" class="form-check-input large-checkbox" id="{{"val-"|strcat:param.id}}" form="form{{pipe.id}}"
-             aria-describedby="{{"example-"|strcat:param.id}}" name="{{"val-"|strcat:param.name}}">
+        <input type="checkbox" class="form-check-input large-checkbox" {% include 'pipeline/params/param_meta.html' %}
+             checked>
     {% endif %}
 </div>

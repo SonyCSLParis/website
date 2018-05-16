@@ -33,27 +33,43 @@ function getFormData($form){
 
 
 function run_form(form_id, pipe_id, rest_url, request_url, input_url, output_url) {
+
+
+    $("#form"+pipe_id).parsley({trigger: "focusout"}).on('field:validated', function() {
+            var ok = $('.parsley-error').length === 0;
+            $('.bs-callout-info').toggleClass('hidden', !ok);
+            $('.bs-callout-warning').toggleClass('hidden', ok);
+    });
+
+
+
     $(document).ready(function () {
         var $myForm = $('#'+form_id);
         $myForm.submit(function (event) {
             event.preventDefault();
-            var formData = getFormData($(this));
-            console.log('input pipe id ' + pipe_id);
-            console.log(JSON.stringify(formData));
-            $.ajax({
+
+            $myForm.parsley().validate();
+
+            if ($myForm.parsley().isValid()) {
+
+                var formData = getFormData($(this));
+                console.log('input pipe id ' + pipe_id);
+                console.log(JSON.stringify(formData));
+                $.ajax({
                     // using put here so we can get the body of the
                     // request. Some middleware is removing the data from post requests.
                     method: "PUT",
-                    url: rest_url+'save_input',
+                    url: rest_url + 'save_input',
                     dataType: "json",
-                    dataContent:"json",
-                    data:JSON.stringify(formData),
+                    dataContent: "json",
+                    data: JSON.stringify(formData),
                     success: make_request,
-                    error: function(response){
+                    error: function (response) {
                         console.log('could not save input');
                         console.log(response);
                     }
                 });
+            }
         });
 
         function make_request(data) {
