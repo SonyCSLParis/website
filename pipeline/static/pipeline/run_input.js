@@ -35,7 +35,7 @@ function getFormData($form){
 function run_form(form_id, pipe_id, rest_url, request_url, input_url, output_url) {
 
 
-    $("#form"+pipe_id).parsley({trigger: "focusout"}).on('field:validated', function() {
+    $("#form"+pipe_id).parsley({trigger: "change"}).on('field:validated', function() {
             var ok = $('.parsley-error').length === 0;
             $('.bs-callout-info').toggleClass('hidden', !ok);
             $('.bs-callout-warning').toggleClass('hidden', ok);

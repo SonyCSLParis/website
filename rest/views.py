@@ -2,11 +2,11 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import requests
 from django.core import serializers
-from browser.models import Request, ComponentSpecification, Parameter
+from browser.models import PathRequest, ComponentSpecification, Parameter, PathResponse
 from pipeline.models import Pipe, Pipeline
 import json
 import datetime
-from django.urls import reverse
+from django.db import transaction
 from core.pipeline import populate_pipes_params, get_request_params
 
 param_prefix = 'param-'
@@ -166,7 +166,8 @@ def save_input(request):
             pipe = Pipe.objects.get(pk=request_data['pipe_id'])
             request_data = get_request_params(pipe)
 
-        return Response({"request_data": request_data})
+        return Response({"request_data": request_data,
+                         "errors": validation_errors})
 
 
 @api_view(['PUT'])
@@ -210,7 +211,7 @@ def create_pipe(request):
         else:
             next_postition = 0  # start from 0
 
-        request = Request.objects.get(pk=request_id)
+        request = PathRequest.objects.get(pk=request_id)
         parameters = request.parameters.filter(sub_param=None)
         # duplicate parameter from the request specification for the pipe.
         def duplicate_parameters(internal_parameters):
@@ -305,10 +306,10 @@ def move_down_pipe(request):
 
 
 @api_view(['PUT'])
+@transaction.atomic
 def save_component(request):
     if request.method == 'PUT':
         component_spec = json.loads(request.body)
-
         requests = component_spec['requests']
         del component_spec['requests']
 
@@ -318,39 +319,67 @@ def save_component(request):
         for request in requests:
 
             request_params = request['parameters']
+            request_responses = request['responses']
             del request['parameters']
+            del request['responses']
 
             request['component'] = component
-            request_inst = Request.objects.create(**request)
+
+            request_inst = PathRequest.objects.create(**request)
             request_inst.component = component
             request_inst.save()
 
             def json_dump_val(param_dict):
-
                 return {key: json.dumps(val) for key, val in param_dict.items()}
 
-            def add_params(request_params, parent_param=None):
+            def add_params(request_params, inst, parent_param=None):
 
                 for parameter in request_params:
 
-                    if 'nested' in parameter:
-                        nested_params = parameter['nested']
-                        del parameter['nested']
-                    else:
-                        nested_params = None
+                    nested_params = None
+
+                    if 'properties' in parameter or 'items' in parameter:
+
+                        field_name = 'properties' if 'properties' in parameter else 'items'
+                        nested_params = parameter[field_name]
+                        del parameter[field_name]
+
+                    if 'in' in parameter:
+                        parameter['location'] = parameter['in']
+                        del parameter['in']
 
                     # we want to represent all values as json strings so we can deserialise them as objects later
                     json_val_param = json_dump_val(parameter)
                     param_instance = Parameter.objects.create(**json_val_param)
-                    request_inst.parameters.add(param_instance)
+                    inst.parameters.add(param_instance)
 
                     if parent_param:
                         parent_param.nested.add(param_instance)
 
                     if nested_params:
-                        add_params(nested_params, param_instance)
+                        add_params(nested_params, inst, param_instance)
 
-            add_params(request_params)
+            def add_responses(responses, request_inst):
+
+                for response in responses:
+
+                    response_inst = PathResponse()
+                    response_inst.request = request_inst
+                    response_inst.status_code = response['status_code']
+                    response_inst.save()
+                    request_inst.responses.add(response_inst)
+
+                    if 'description' in response:
+                        response_inst.description = response['description']
+
+                    if 'schema' in response:
+                        print('schema', response['schema'])
+                        add_params(response['schema'], response_inst)
+
+                    response_inst.save()
+
+            add_params(request_params, request_inst) # add params to request
+            add_responses(request_responses, request_inst) # add responses to request
 
         return Response({"message": "success"})
 

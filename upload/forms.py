@@ -3,53 +3,68 @@ from bravado.client import SwaggerClient
 import yaml
 import json
 from bravado_core.spec import Spec
+from core import parse_open_api
 
 
 class UploadFileForm(forms.Form):
     file = forms.FileField()
     name = forms.TextInput()
 
+
     def is_valid(self):
         # run the parent validation first
         valid = super(UploadFileForm, self).is_valid()
 
-        if not valid:
-            return False
-
+        file = None
         try:
             file = self.files['file'].read().decode('utf-8')
-            file_is_json_or_yaml = False
+        except Exception:
 
-            # TODO for some reason Spec.from_dict doesn't work for yaml's dict parse.
-            # For this reason I'm re-encoding the dict as json and loading it again as a json dict.
-            try:
-                spec_dict = yaml.load(file)
-                spec_dict = json.dumps(spec_dict)
-                spec_dict = json.loads(spec_dict)
-                file_is_json_or_yaml = True
-            except Exception as e:
-                self.add_error(field=None, error='Invalid yaml.')
-                return False
-
-            if not file_is_json_or_yaml:
-                try:
-                    spec_dict = json.loads(file)
-                    file_is_json_or_yaml = True
-                except Exception as e:
-                    self.add_error(field=None, error='Invalid json.')
-                    return False
-
-            swagger_spec = Spec.from_dict(spec_dict,
-                                          config={'validate_requests': False,
-                                                  'use_models': False
-                                                 }
-                                          )
-            self.swagger_spec = swagger_spec.spec_dict
-        except Exception as e:
-            self.add_error(field=None, error='Invalid OpenAPI format with error {}'.format(e))
+            self.add_error('file', "Could not load file.")
             return False
 
-        return valid & True
+        self.spec_dict = {}
+        name = self.files['file'].name
+
+        is_json = name.split('.')[-1] == 'json'
+        is_yaml = name.split('.')[-1] == 'yaml'
+
+        if not (json or yaml):
+            self.add_error(None, 'File is not in .json or .yaml format.')
+            return False
+
+        if is_yaml:
+            try:
+                spec_dict = yaml.safe_load(file)
+                spec_dict = json.loads(json.dumps(spec_dict))
+                self.spec_dict, errors = parse_open_api.extract_swagger(spec_dict)
+
+                if errors:
+                    for error in errors:
+                        self.add_error(field=None, error=error)
+                    return False
+                else:
+                    return True
+            except Exception as e:
+                self.add_error(None, "Could not parse specification from yaml file.")
+                return False
+
+        if is_json:
+            try:
+                spec_dict = json.loads(file)
+                self.spec_dict, errors = parse_open_api.extract_swagger(spec_dict)
+
+                if errors:
+                    for error in errors:
+                        self.add_error(field=None, error=error)
+                    return False
+                else:
+                    return True
+            except Exception as e:
+                self.add_error(None, "Could not parse specification from json file.")
+                return False
+
+        return valid
 
 
 

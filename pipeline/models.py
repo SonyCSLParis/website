@@ -1,5 +1,5 @@
 from django.db import models
-from browser.models import Request, Parameter
+from browser.models import PathRequest, Parameter
 from django.contrib import admin
 from django import forms
 import json
@@ -13,7 +13,7 @@ class Pipeline(models.Model):
 
     name = models.CharField(max_length=200)
     description = models.TextField(max_length=200)
-    requests = models.ManyToManyField(Request, related_name="multiple", null=True, blank=True)
+    requests = models.ManyToManyField(PathRequest, related_name="multiple", blank=True)
     # used to assign pipes a number local to the pipeline. New pipes are given id_gen + 1 and id_gen is incremented.
     local_id_gen = models.IntegerField()
 
@@ -21,14 +21,14 @@ class Pipeline(models.Model):
 class Pipe(models.Model):
 
     pipe_line = models.ForeignKey(Pipeline, on_delete=models.CASCADE)
-    request = models.ForeignKey(Request, on_delete=models.CASCADE)
+    request = models.ForeignKey(PathRequest, on_delete=models.CASCADE)
     run_time = models.DateTimeField(null=True, blank=True)  # time at which input was run
     output = models.TextField(null=True, blank=True)
     output_time = models.DateTimeField(null=True, blank=True)  # time at which output was acquired
     position = models.IntegerField()  # position in list of pipes used for ordering on page
     local_id = models.IntegerField()  # the id for the pipe locally also the id given to the output
 
-    parameters = models.ManyToManyField(Parameter, related_name="has_params", null=True, blank=True)
+    parameters = models.ManyToManyField(Parameter, related_name="has_params", blank=True)
 
     @property
     def short_output(self):

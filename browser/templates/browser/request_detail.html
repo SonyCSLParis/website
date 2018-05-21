@@ -8,51 +8,41 @@
     <link rel="stylesheet" type="text/css" href="{% static 'browser/detailed.css' %}" />
 
     <div class="container">
-        <div class="request grid-container">
-           <div class="grid-item request-type {{ request.type }}">{{ request.type }}</div>
-           <div class="grid-item request-name">{{ request.name }}</div>
-                {% for param in parameters%}
-                    <div class="params-container">
-                            {% for k, v in param.items%}
-                                {% if k == 'nested' %}
-                                    <div class="row">
-                                        <div class="param-name col-xs-2 col-sm-2">{{k}}:</div>
-                                    </div>
-                                    {% for nested_parameters in v %}
-                                        {% for nested_k, nested_v in nested_parameters.items%}
-                                            <div class="params-container-nested-1 row">
 
-                                                <div class="param-name col-xs-2 col-sm-2"><p class="nested-marker">-&ensp;</p>{{nested_k}}:</div>
-                                                {% if nested_k == 'example' %}
-                                                    <div class="param-value col-xs-10 col-sm-10 ">{{nested_v|json}}</div>
-                                                {% elif  nested_k == 'description'%}
-                                                    <div class="param-value col-xs-10 col-sm-10 ">{{nested_v|markdown}}</div>
-                                                {% else %}
-                                                    <div class="param-value col-xs-10 col-sm-10 ">{{nested_v}}</div>
-                                                {% endif %}
-                                            </div>
-                                        {% endfor %}
 
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="param-container row">
-                                      <div class="param-name col-xs-2 col-sm-2">{{k}}:</div>
-                                      {% if k == 'example' %}
-                                          <div class="param-value col-xs-10 col-sm-10 ">{{v|json}}</div>
-                                      {% elif  k == 'description'%}
-                                          <div class="param-value col-xs-10 col-sm-10 ">{{v|markdown}}</div>
-                                      {% else %}
-                                          <div class="param-value col-xs-10 col-sm-10 ">{{v}}</div>
-                                      {% endif %}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                    <hr/>
-                {%  endfor %}
-   </div>
+        <div class="grid-item request-type {{ request.type }}">{{ request.type }}</div>
+        <div class="grid-item request-name">{{ request.name }}</div>
+        {% if request.description %}
+            <div class="grid-item request-description">{{ request.description|linebreaksbr }}</div>
+        {% endif %}
 
-   <p>{{ request.request_description|linebreaksbr}}</p>
+        <div class="parameters_section_heading">Input parameters:</div>
+        <div class="requests grid-container">
+            {% include 'browser/parameters.html' %}
+        </div>
 
-   </div>
+        <div class="response_section_heading">Responses</div>
+
+        <div class="responses grid-container">
+            {% for response in responses%}
+                <div class="response">
+                    <p>status code: {{ response.status_code }}</p>
+                    <p> description: {{ response.description|linebreaksbr }}</p>
+                    {% if response.parameters %}
+                        <p>Response parameters:</p>
+                        <div class="response_params">
+                            {% with response.parameters as parameters %}
+                                {% include 'browser/parameters.html' %}
+                        {% endwith %}
+                          </div>
+                    {% endif %}
+                </div>
+                {% if forloop.last == False %}
+                       <hr/>
+                   {% endif %}
+            {% endfor %}
+
+        </div>
+    </div>
 
 {% endblock %}

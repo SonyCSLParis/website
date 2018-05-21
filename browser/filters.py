@@ -1,7 +1,7 @@
 import django_filters
 from django.db.models import Q
 
-from .models import Request, ComponentSpecification
+from .models import PathRequest, ComponentSpecification
 import itertools
 
 

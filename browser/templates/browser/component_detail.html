@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-
+{% load app_filters %}
 {% block content %}
 
     <link rel="stylesheet" type="text/css" href="{% static 'browser/detailed.css' %}" />
@@ -9,12 +9,17 @@
        <h1>{{object.name}}</h1>
        <p>{{ object.description|linebreaksbr}}</p>
        <p>{{ object.url}}</p>
-       {% for request in object.request_set.all %}
+       {% for request in object.pathrequest_set.all %}
            <div class="request grid-container">
                 <div class="grid-item request-type {{ request.type }}">
                     <a href="{% url 'browser:request' request.pk %}">{{ request.type }}</a>
                 </div>
-                <div class="grid-item request-name">{{ request.name }}</div>
+               <div class="request_detail">
+                    <div class="grid-item request-name">{{ request.name }}</div>
+                    {% if request.description %}
+                        <div class="grid-item request-description">{{ request.description|truncated_string:500 }}</div>
+                   {% endif %}
+              </div>
             </div>
        {% endfor %}
    </div>

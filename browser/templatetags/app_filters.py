@@ -64,6 +64,12 @@ def convert_to_markdown(string):
     return mark_safe(style + response)
 
 
+@register.filter(name='truncated_string')
+def truncate_string(string, size):
+    if size < len(string):
+        return string[:size] + '...'
+
+    return string
 
 
 @register.filter
@@ -76,7 +82,6 @@ def strip_double_quotes(string):
 
 
     return string.strip('\"')
-
 
 
 @register.filter('find_param_type')

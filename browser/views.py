@@ -1,7 +1,7 @@
 from django.shortcuts import render
 # Create your views here.
 from django.views import generic
-from .models import Request, ComponentSpecification
+from .models import PathRequest, ComponentSpecification
 from .filters import ComponentFilter
 from django_filters.views import FilterView
 
@@ -12,19 +12,20 @@ class ComponentDetailView(generic.DetailView):
 
 
 class RequestDetailView(generic.DetailView):
-    model = Request
+    model = PathRequest
     template_name = 'browser/request_detail.html'
 
     def get_context_data(self, **kwargs):
 
         context = {'request': {k: v for k, v in self.object.__dict__.items() if k != '_state'}}
 
-        def extract_fields(dictionary):
+        def extract_param_fields(dictionary):
 
             parameters = {}
 
             for k, v in dictionary.items():
                 k = k if k != 'enum' else 'options'
+                k = k if k!= 'location' else 'in'
 
                 if k not in ['_state', 'id'] and v is not None:
                     parameters[k] = v
@@ -45,11 +46,30 @@ class RequestDetailView(generic.DetailView):
                 if nested_params:
                     param_dict['nested'] = nested_params
 
-                internal_parameters.append(extract_fields(param_dict))
+                internal_parameters.append(extract_param_fields(param_dict))
 
             return internal_parameters
 
+        def extract_response_fields(response_dict):
+
+            return {key:value for key, value in response_dict.items() if key in ['status_code', 'description', 'parameters']}
+
+        def extract_responses(objects):
+
+            responses = []
+
+            for obj in objects:
+
+                response_dict = obj.__dict__
+                params = obj.parameters.all()
+                params = [extract_param_fields(obj.__dict__) for obj in params]
+                response_dict['parameters'] = params
+                responses.append(extract_response_fields(response_dict))
+
+            return responses
+
         context['parameters'] = extract_parameters(self.object.parameters.filter(sub_param=None))
+        context['responses'] = extract_responses(self.object.responses.all())
 
         return context
 

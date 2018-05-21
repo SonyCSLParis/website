@@ -25,3 +25,13 @@ li a {
     color: #9fabb4;
     float: left;
 }
+
+.request_detail {
+    border-bottom: 1px solid #d1ccd4;
+    margin-bottom: 20px;
+    padding-left: 10px;
+}
+
+.response_params {
+    margin-left: 50px;
+}

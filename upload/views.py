@@ -10,6 +10,7 @@ from core import parse_open_api
 from bravado_core.spec import Spec
 from django.urls import reverse
 import requests
+from django.http import JsonResponse
 
 
 def upload_file(request):
@@ -20,10 +21,15 @@ def upload_file(request):
             host = request.get_host()
             rest_endpoint = reverse('rest:save_component')
             url = scheme + '://' + host + rest_endpoint
-            component_dict = parse_open_api.upload_swagger(form.swagger_spec)
-            component_dict['name'] = request.POST['name']
-            r = requests.put(url=url, json=component_dict)
-            return render(request, 'upload/success.html', {'form': form})
+
+            if not form.errors:
+                form.spec_dict['name'] = request.POST['name']
+                r = requests.put(url=url, json=form.spec_dict)
+                return render(request, 'upload/success.html', {'form': form})
+            else:
+                return JsonResponse({
+                    'success': False,
+                })
     else:
         form = UploadFileForm()
 

@@ -28,11 +28,18 @@
     margin:0;
 }
 
-.request {
+.requests {
     border: 2px solid #d1ccd4;
        border-radius: 7px;
     margin-bottom: 4px;
-    display: inline-block;
+    min-width: 250px;
+    overflow:hidden;
+}
+
+.responses {
+    border: 2px solid #d1ccd4;
+       border-radius: 7px;
+    margin-bottom: 4px;
     min-width: 250px;
     overflow:hidden;
 }
@@ -58,7 +65,5 @@
 
 
 .request-name {
-    border-bottom:1px solid #d1ccd4;
-    margin-bottom: 20px;
-    padding-left: 10px;
+    text-decoration: solid;
     }

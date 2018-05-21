@@ -12,7 +12,37 @@ import yaml
 request_fields = ['path', 'name', 'type', 'parameters', 'description']
 component_fields = ['title', 'host', 'base_path', 'description', 'summary',
                                      'version', 'openapi_version', 'requests']
-parameter_fields = ['type', 'name', 'default', 'example', 'description', 'enum', 'required', 'nested']
+parameter_fields = ['type', 'name', 'default', 'example', 'description',
+                    'enum', 'required', 'properties', 'items', 'in', 'maximum', 'minimum']
+
+
+def parse_spec_from_dict(swagger_dict):
+
+    swagger_spec = Spec.from_dict(swagger_dict,
+                                  config={'validate_requests': False,
+                                          'use_models': False,
+                                          'default_type_to_object': True,
+                                          'internally_dereference_refs': True
+                                          }
+                                  )
+
+    return swagger_spec.deref_flattened_spec
+
+
+def load_spec(path):
+    with open(path, 'r') as f:
+        data = f.read()
+        swagger_json = json.loads(data)
+
+    swagger_spec = Spec.from_dict(swagger_json,
+                                  config={'validate_requests': False,
+                                          'use_models': False,
+                                          'default_type_to_object': True,
+                                          'internally_dereference_refs': True
+                                          }
+                                  )
+
+    return swagger_spec.deref_flattened_spec
 
 
 def get_def(inner_schema, swagger_spec):
@@ -37,47 +67,90 @@ def extract_schema_get(parameters):
     return extracted_parameters
 
 
-def extract_schema(request_params, swagger_spec):
+def extract_schema(request_params):
 
-    schema = request_params['schema']
+    def extract(outer):
 
-    def extract(inner_schema):
+        if 'schema' in outer:
+            inner = outer['schema']
+            del outer['schema']
+            outer.update(extract(inner))
+            return get_if_present_else_none(parameter_fields, outer)
 
-        if '$ref' in inner_schema:
-            return extract(get_def(inner_schema, swagger_spec))
-        else:
+        if 'items' in outer and type(outer['items']) is dict:
+            outer['items'] = [extract(outer['items'])]
 
-            parameters = []
+        if 'properties' in outer and type(outer['properties']) is dict:
+            outer['type'] = 'object'
+            inner = outer['properties']
+            outer_required = outer.get('required', [])
+            outer_example = outer.get('example', [])
 
-            for request_name, params in inner_schema['properties'].items():
+            if outer_required:
+                del outer['required']
 
-                # params defined in definitions
-                if '$ref' in params:
-                    extracted_nested_schema = extract(params)
-                    is_required = request_name in inner_schema.get('required', [])
-                    params['required'] = is_required
-                    params['name'] = request_name
-                    params['type'] = 'object'
-                    params['nested'] = extracted_nested_schema
-                    param_dict = get_if_present_else_none(parameter_fields, params)
-                    parameters.append(param_dict)
+            if outer_example:
+                del outer['example']
+
+            # It is possible params were specified higher up in the
+            # hierarchy. use these values if none present at this level
+            # but prioritise this level
+
+            required_field = 'required'
+            example_field = 'example'
+
+            # set required and example on sub parameters
+            # if is leaf values were already set from level above
+
+            for param_name, param_values in inner.items():
+
+                value_is_obj = 'properties' in param_values
+
+                if value_is_obj:
+                    inner_object = extract(param_values)
+                    param_values.clear()
+                    param_values.update(inner_object)
                     continue
-                else:
 
-                    is_required = request_name in inner_schema.get('required', [])
-                    params['required'] = is_required
-                    params['name'] = request_name
-                    param_dict = get_if_present_else_none(parameter_fields, params)
-                    parameters.append(param_dict)
+                if 'required' not in param_values:
+                    if param_name in outer_required:
+                        param_values[required_field] = True
+                    else:
+                        param_values[required_field] = False
 
-            return parameters
+                if 'example' not in param_values:
+                    if param_name in outer_example and 'example' not in param_values:
+                        param_values[example_field] = outer_example[param_name]
 
-    extracted_schema = extract(schema)
+                param_values['name'] = param_name
+            outer['properties'] = [extract(val) for key, val in inner.items()]
 
-    return extracted_schema
+        return get_if_present_else_none(parameter_fields, outer)
+
+    return [extract(param_dict) for param_dict in request_params]
 
 
-def extract_requests(swagger_spec):
+def strict_is_true(bool_val, is_strict):
+
+    # any value is fine
+    if is_strict is False:
+        return True
+
+    # must be true if strict is true
+    if bool_val and is_strict is True:
+        return True
+
+    return False
+
+
+error_messages = {
+    'produces_and_consumes_json': '{path} tagged with penelope but it does not consume and produce json. Add consumes '
+                                  'and produces application/json to your specification. Penelope relies on json as a '
+                                  'standard data exchange format.'
+}
+
+
+def extract_requests(swagger_spec, errors, strict=False):
 
     requests = []
 
@@ -85,41 +158,67 @@ def extract_requests(swagger_spec):
         path_requests = swagger_spec['paths'][path]
         for request_type in path_requests:
             request_info = path_requests[request_type]
-            if 'penelope' in request_info['tags'] and 'application/json' in request_info['consumes'] and 'application/json' in request_info['produces']:
+            consumes_and_produces_json = 'application/json' in request_info.get('consumes', []) and \
+                                         'application/json' in request_info.get('produces', [])
+
+            tagged_for_penelope = 'penelope' in request_info['tags']
+
+            if not strict_is_true(consumes_and_produces_json, strict):
+                errors.append(error_messages['produces_and_consumes_json'].format(path))
+                continue
+
+            if tagged_for_penelope and strict_is_true(consumes_and_produces_json, strict):
+
                 summary = request_info.get('summary', None)
                 description = request_info.get('description', None)
+                responses = request_info.get('responses', None)
                 # this is whether arguments need to be sent or not
                 name = path.split('/')[-1]
+
+                parsed_responses = []
+
+                for status, info in responses.items():
+                    response_description = info.get('description', '')
+                    if 'schema' in info:
+                        schema = extract_schema([info])
+                        parsed_responses.append({'status_code': status,
+                                                 'description': response_description,
+                                                 'schema': schema})
+                    else:
+                        parsed_responses.append({'status_code': status,
+                                                 'description': response_description})
 
                 if request_type == 'get':
                     if 'parameters' in request_info:
                         parameters = request_info['parameters']
-
                         extracted_parameters = extract_schema_get(parameters)
-
                         requests.append({'path': path,
                                          'name': name,
                                          'type': request_type.upper(),
                                          'parameters': extracted_parameters,
-                                         'description': description})
+                                         'description': description,
+                                         'summary': summary,
+                                         'responses': parsed_responses})
 
                 # possible to have get request without params
                 if request_type == 'post':
                     if 'parameters' in request_info:
-                        for request_params in request_info['parameters']:
-
-                            if request_params['in'] == 'body':
-                                extracted_parameters = extract_schema(request_params, swagger_spec)
-                                requests.append({'path': path,
-                                                 'name': name,
-                                                 'type': request_type.upper(),
-                                                 'parameters': extracted_parameters,
-                                                 'description': description})
+                        parameters = request_info['parameters']
+                        extracted_parameters = extract_schema(parameters)
+                        requests.append({'path': path,
+                                         'name': name,
+                                         'type': request_type.upper(),
+                                         'parameters': extracted_parameters,
+                                         'description': description,
+                                         'responses': parsed_responses,
+                                         'summary': summary})
 
     return requests
 
 
-def upload_swagger(swagger_spec):
+def extract_swagger(swagger_spec, strict=False):
+
+    errors = []
 
     if 'schemes' in swagger_spec:
         schemes = swagger_spec['schemes']
@@ -135,7 +234,9 @@ def upload_swagger(swagger_spec):
                   'host': swagger_spec['host'],
                   'base_path': swagger_spec['basePath']}
 
-    component_dict = get_if_present_else_none(component_fields, spec_props)
-    component_dict['requests'] = extract_requests(swagger_spec)
+    swagger_spec = parse_spec_from_dict(swagger_spec)
 
-    return component_dict
+    component_dict = get_if_present_else_none(component_fields, spec_props)
+    component_dict['requests'] = extract_requests(swagger_spec, errors, strict=strict)
+
+    return component_dict, errors

@@ -1,0 +1,454 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "This is a simple API",
+    "version" : "1.0.0",
+    "title" : "Simple Inventory API",
+    "contact" : {
+      "email" : "you@your-company.com"
+    },
+    "license" : {
+      "name" : "Apache 2.0",
+      "url" : "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host" : "virtserver.swaggerhub.com",
+  "basePath" : "/Manslow/test_api/1.0.0",
+  "tags" : [ {
+    "name" : "penelope",
+    "description" : "should be extracted by penelope"
+  }, {
+    "name" : "notpenelope",
+    "description" : "should not be extracted by penelope"
+  } ],
+  "schemes" : [ "https" ],
+  "paths" : {
+    "/simple_get" : {
+      "get" : {
+        "tags" : [ "penelope" ],
+        "summary" : "summary text",
+        "description" : "description text",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "stringenumparam",
+          "in" : "query",
+          "description" : "stringenumparam description text",
+          "required" : false,
+          "type" : "string",
+          "enum" : [ "val1", "val2", "val3" ]
+        }, {
+          "name" : "stringparam",
+          "in" : "query",
+          "description" : "stringparam description text",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "stringparamdefault",
+          "in" : "query",
+          "description" : "stringparam description text",
+          "required" : false,
+          "type" : "string",
+          "default" : "stringparamdefault"
+        }, {
+          "name" : "stringparamnorequired",
+          "in" : "query",
+          "description" : "stringparamnorequired description text",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "stringparamrequired",
+          "in" : "query",
+          "description" : "stringparamrequired description text",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "intparam",
+          "in" : "query",
+          "description" : "intparam description text",
+          "required" : false,
+          "type" : "integer",
+          "maximum" : 100.0,
+          "minimum" : 1
+        }, {
+          "name" : "numparam",
+          "in" : "query",
+          "description" : "numparam description text",
+          "required" : false,
+          "type" : "number",
+          "maximum" : 100.0,
+          "minimum" : 1,
+          "format" : "float"
+        }, {
+          "name" : "boolparam",
+          "in" : "query",
+          "description" : "boolparam description",
+          "required" : false,
+          "type" : "boolean",
+          "default" : true
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "simple string",
+            "schema" : {
+              "$ref" : "#/definitions/SimpleString"
+            }
+          },
+          "201" : {
+            "description" : "simple integer",
+            "schema" : {
+              "$ref" : "#/definitions/SimpleInteger"
+            }
+          },
+          "202" : {
+            "description" : "simple number",
+            "schema" : {
+              "$ref" : "#/definitions/SimpleNumber"
+            }
+          },
+          "203" : {
+            "description" : "simple string enum",
+            "schema" : {
+              "$ref" : "#/definitions/SimpleStringEnum"
+            }
+          }
+        }
+      }
+    },
+    "/simple_post" : {
+      "post" : {
+        "tags" : [ "penelope" ],
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "param",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/SimpleNumber"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "200 description"
+          }
+        }
+      }
+    },
+    "/simple_post_not_for_penelope" : {
+      "post" : {
+        "tags" : [ "notpenelope" ],
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "param1",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/SimpleNumber"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "200 description"
+          }
+        }
+      }
+    },
+    "/simple_nameless_param_post" : {
+      "post" : {
+        "tags" : [ "penelope" ],
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "bodyparam",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/SimpleNumber"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "200 description"
+          }
+        }
+      }
+    },
+    "/dict_post" : {
+      "post" : {
+        "tags" : [ "penelope" ],
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "param1",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/Dict"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "200 description"
+          }
+        }
+      }
+    },
+    "/dict_dict_post" : {
+      "post" : {
+        "tags" : [ "penelope" ],
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "param1",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/DictDict"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "200 description"
+          }
+        }
+      }
+    },
+    "/array_post" : {
+      "post" : {
+        "tags" : [ "penelope" ],
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "param1",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/Array"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "200 description"
+          }
+        }
+      }
+    },
+    "/array_dict_post" : {
+      "post" : {
+        "tags" : [ "penelope" ],
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "param1",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/ArrayDict"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "200 description"
+          }
+        }
+      }
+    },
+    "/array_dict_array_post" : {
+      "post" : {
+        "tags" : [ "penelope" ],
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "param1",
+          "description" : "Inventory item to add",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/ArrayDictArray"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "200 description"
+          }
+        }
+      }
+    },
+    "/pathparam/{pathparam}" : {
+      "get" : {
+        "tags" : [ "penelope" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "pathparam",
+          "in" : "path",
+          "description" : "ID of pet to return",
+          "required" : true,
+          "type" : "integer"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "success"
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "penelope" ],
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "pathparam",
+          "in" : "path",
+          "required" : true,
+          "type" : "integer"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "success"
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "penelope" ],
+        "parameters" : [ {
+          "name" : "pathparam",
+          "in" : "path",
+          "required" : true,
+          "type" : "integer",
+          "format" : "int64"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "invalid"
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "SimpleString" : {
+      "type" : "string",
+      "example" : "some string",
+      "default" : "default string"
+    },
+    "SimpleInteger" : {
+      "type" : "integer",
+      "example" : "101",
+      "default" : 1
+    },
+    "SimpleNumber" : {
+      "type" : "number",
+      "example" : "1",
+      "default" : 1
+    },
+    "SimpleStringEnum" : {
+      "type" : "string",
+      "example" : "some string",
+      "enum" : [ "val1", "val2", "val3" ],
+      "default" : "default string"
+    },
+    "Dict" : {
+      "type" : "object",
+      "required" : [ "release_date"],
+      "properties" : {
+        "name" : {
+          "type" : "string",
+          "example" : "example string"
+        },
+        "release_date" : {
+          "type" : "string",
+          "example" : "an example"
+        }
+      },
+      "example" : {
+        "release_date" : "an example",
+        "name" : "example string"
+      }
+    },
+    "DictDict" : {
+      "type" : "object",
+      "required" : [ "nestedprop", "prop1" ],
+      "properties" : {
+        "prop1" : {
+          "type" : "string",
+          "example" : "a string"
+        },
+        "nestedprop" : {
+          "$ref" : "#/definitions/DictDict_nestedprop"
+        }
+      },
+      "example" : {
+        "prop1" : "a string",
+        "nestedprop" : {
+          "prop2" : "prop2 string",
+          "prop1" : "prop1 string"
+        }
+      }
+    },
+    "Array" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "ArrayDict" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/definitions/ArrayDict_inner"
+      }
+    },
+    "ArrayDictArray" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/definitions/ArrayDictArray_inner"
+      }
+    },
+    "DictDict_nestedprop" : {
+      "required" : [ "prop1", "prop2" ],
+      "properties" : {
+        "prop1" : {
+          "type" : "string",
+          "example" : "prop1 string"
+        },
+        "prop2" : {
+          "type" : "string",
+          "example" : "prop2 string"
+        }
+      },
+      "example" : {
+        "prop2" : "prop2 string",
+        "prop1" : "prop1 string"
+      }
+    },
+    "ArrayDict_inner" : {
+      "required" : [ "prop1", "prop2" ],
+      "properties" : {
+        "prop1" : {
+          "type" : "string"
+        },
+        "prop2" : {
+          "type" : "string",
+          "format" : "int32"
+        }
+      }
+    },
+    "ArrayDictArray_inner" : {
+      "required" : [ "prop1" ],
+      "properties" : {
+        "prop1" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "prop2" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+  }
+}
