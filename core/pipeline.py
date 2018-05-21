@@ -182,6 +182,13 @@ def populate_pipe_params(pipe):
     request_dict = extract_fields(pipe.request.__dict__)
     request_dict['component'] = pipe.request.component.__dict__
     pipe_dict = extract_fields(pipe.__dict__)
+
+    # remove wrapper off body parameter.
+    if param_dict:
+        param = param_dict[0]
+        if 'location' in param and param['location'] == 'body':
+            param_dict = param['nested']
+
     pipe_dict['parameters'] = param_dict
     pipe_dict['request'] = request_dict
 
@@ -192,6 +199,13 @@ def get_request_params(pipe):
 
     parent_parameters = pipe.parameters.filter(sub_param=None)
     params = extract_parameters(parent_parameters)
+
+    # if the parameter is a body parameter then this first param is just a wrapper for the real parameters so extract
+    # it
+    if params:
+        param = params[0]
+        if 'location' in param and param['location'] == 'body':
+            params = param['nested']
 
     def param_list_to_dict(param_list):
 

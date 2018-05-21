@@ -2,13 +2,7 @@ from django.views import generic
 from .filters import PipelineFilter
 from .models import Pipeline
 from django_filters.views import FilterView
-from django.http import HttpResponse
 from .models import Pipe
-from django.utils.timezone import utc
-import json
-import datetime
-from django.utils import formats
-from django.template.loader import render_to_string
 from core.pipeline import populate_pipe_params, populate_pipes_params
 
 
