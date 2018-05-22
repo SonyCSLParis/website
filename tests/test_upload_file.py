@@ -138,7 +138,9 @@ class TestExtractSwagger(TestCase):
         self.assertEqual(top_level_object,
                          {'type': 'object', 'name': 'param1', 'required': False,
                           'properties': [{'type': 'string', 'name': 'prop1', 'example': 'a string', 'required': True},
-                                         {'type': 'object', 'properties': [
+                                         {'type': 'object',
+                                          'name': 'nestedprop',
+                                          'properties': [
                                              {'type': 'string', 'name': 'prop1', 'example': 'prop1 string',
                                               'required': True},
                                              {'type': 'string', 'name': 'prop2', 'example': 'prop2 string',

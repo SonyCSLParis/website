@@ -153,13 +153,16 @@ def extract_parameters(objects, is_nested=False):
 
     for obj in objects:
 
-        nested_params = obj.nested.all()
-        if nested_params:
-            nested_params = extract_parameters(nested_params, True)
-
         param_dict = obj.__dict__
-        if nested_params:
-            param_dict['nested'] = nested_params
+        if param_dict.get('location', None) == 'body':
+            nested_params = obj.nested.all()
+            return extract_parameters(nested_params, False)
+
+        if param_dict['type'] == '"object"':
+            nested_params = obj.nested.all()
+            if nested_params:
+                nested_params = extract_parameters(nested_params, True)
+                param_dict['nested'] = nested_params
 
         internal_parameters.append(extract_fields(param_dict))
 
@@ -225,8 +228,16 @@ def get_request_params(pipe):
             else:
                 if 'value' in param:
                     value = param['value']
+
                     converter = converter_funcs[param['type']]
-                    converted_value = converter(value)
+
+                    # All params should have been validated by now. However, if empty and not required
+                    # it can still throw an error with some converter functions. So simply set value to empty string.
+                    if value != '':
+                        converted_value = converter(value)
+                    else:
+                        converted_value = ''
+
                     param_dict[name] = converted_value
 
         return param_dict

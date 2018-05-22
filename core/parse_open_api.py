@@ -71,12 +71,6 @@ def extract_schema(request_params):
 
     def extract(outer):
 
-        if 'schema' in outer:
-            inner = outer['schema']
-            del outer['schema']
-            outer.update(extract(inner))
-            return get_if_present_else_none(parameter_fields, outer)
-
         if 'items' in outer and type(outer['items']) is dict:
             outer['items'] = [extract(outer['items'])]
 
@@ -109,6 +103,7 @@ def extract_schema(request_params):
                 if value_is_obj:
                     inner_object = extract(param_values)
                     param_values.clear()
+                    param_values['name'] = param_name
                     param_values.update(inner_object)
                     continue
 
@@ -124,6 +119,11 @@ def extract_schema(request_params):
 
                 param_values['name'] = param_name
             outer['properties'] = [extract(val) for key, val in inner.items()]
+
+        if 'schema' in outer:
+            inner = outer['schema']
+            del outer['schema']
+            outer.update(extract(inner))
 
         return get_if_present_else_none(parameter_fields, outer)
 
@@ -204,6 +204,9 @@ def extract_requests(swagger_spec, errors, strict=False):
                 if request_type == 'post':
                     if 'parameters' in request_info:
                         parameters = request_info['parameters']
+                        if name == 'pipeline':
+                            a = 1
+
                         extracted_parameters = extract_schema(parameters)
                         requests.append({'path': path,
                                          'name': name,

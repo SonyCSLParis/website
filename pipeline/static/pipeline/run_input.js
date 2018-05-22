@@ -41,8 +41,6 @@ function run_form(form_id, pipe_id, rest_url, request_url, input_url, output_url
             $('.bs-callout-warning').toggleClass('hidden', ok);
     });
 
-
-
     $(document).ready(function () {
         var $myForm = $('#'+form_id);
         $myForm.submit(function (event) {
@@ -64,18 +62,39 @@ function run_form(form_id, pipe_id, rest_url, request_url, input_url, output_url
                     dataContent: "json",
                     data: JSON.stringify(formData),
                     success: make_request,
-                    error: function (response) {
-                        console.log('could not save input');
-                        console.log(response);
-                    }
+                    error: server_side_error
                 });
             }
         });
 
+        function server_side_error (errors) {
+                                console.log('server side validation error');
+                                console.log(errors);
+                                Object.keys(errors).forEach(function(key) {
+                                    $('#'+key).parsley().addError('error-1', { message: errors[key] });
+                                });
+                            }
+
+        function isEmpty(ob){
+            for(var i in ob){
+                return false;
+            }
+            return true;
+        }
+
         function make_request(data) {
+
+            var errors = data['errors'];
+            console.log(errors);
+            if (!isEmpty(errors)) {
+
+                server_side_error(errors); // manually trigger callback
+                return;
+                }
 
             console.log('saved input');
             data['request_url'] = request_url;
+            data['pipe_id'] = pipe_id;
             console.log('making request to ' + request_url);
             $('#input'+pipe_id).load(input_url + '/' + pipe_id);
 
@@ -90,7 +109,6 @@ function run_form(form_id, pipe_id, rest_url, request_url, input_url, output_url
                     success: handleRequestSuccess,
                     error: handleRequestFailure
                     });
-
 
             function handleRequestSuccess(response){
 
@@ -109,7 +127,7 @@ function run_form(form_id, pipe_id, rest_url, request_url, input_url, output_url
                 });
 
                 function handle_output_save_success(data){
-                    console.log('saved output')
+                    console.log('saved output');
                     $('#output'+pipe_id).load(output_url + '/' + pipe_id);
                     console.log('updated html')
                 }

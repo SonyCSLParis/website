@@ -89,7 +89,7 @@ def convert_to_format(input_dict):
             converted_value = converter(value)
 
         except Exception as e:
-            errors[param.name] = 'Parameter error: {} could not be parsed as {} for parameter {}.'\
+            errors['val-' + param.id] = 'Parameter error: {} could not be parsed as {} for parameter {}.'\
                                   .format(value, converter, param.name)
             break
 
@@ -97,14 +97,17 @@ def convert_to_format(input_dict):
     for param in params:
         param_obj = Parameter.objects.get(pk=param.id)
         is_required = convert_bool(param_obj.required)
+        input_field_id = 'val-'+param.id
 
         if is_required and param.value == '':
-            errors[param.name] = 'Param {} is required but is empty'.format(param.name)
+            # The key should be the input field id. This is used to map the message to an input field to display the
+            # error message.
+            errors[input_field_id] = 'Parameter {} cannot be empty.'.format(param.name)
         elif param.value == '':
             # suppress any errors as val was not required so it being empty doesn't matter
-            # this shouldn't be neccesary if converters don't create an error from an empty string
-            if param.name in errors:
-                del errors[param.name]
+            # this wouldn't be neccesary if converters don't create an error from an empty string
+            if input_field_id in errors:
+                del errors[input_field_id]
 
     return params, errors
 
@@ -136,21 +139,43 @@ def save_parameters(pipe_id, parameters, validation_errors):
 def format_error_output(errors):
     return "\n".join(list(errors.values()))
 
+default_status_responses = {
+    200: 'Success',
+    300: 'Redirect occured', # probably not appropriate for penelope?
+    400: 'Client side error at {}',
+    500: 'Server side error at {}.'
+}
+
+
+def round_down(num, divisor):
+    return num - (num%divisor)
 
 @api_view(['PUT'])
 def external_request(request):
     if request.method == 'PUT':
         data = json.loads(request.body)
+        pipe_id = data['pipe_id']
+        pipe = Pipe.objects.get(id=pipe_id)
+        request = pipe.request
+        responses_db = request.responses.all()
+        defined_responses = {}
+
+        for response in responses_db:
+            if response.description:
+                defined_responses[response.status_code] = response.description
 
         headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
         # we require all external requests use https
         r = requests.post('https://'+data['request_url'], json=data['request_data'], headers=headers)
 
-        if r.status_code == 200:
-            return Response({"output": json.loads(r.content)})
+        if r.status_code in defined_responses:
+            if round_down(r.status_code, 100) == 200:
+                return Response({"output{}".format(pipe_id): json.loads(r.content),
+                                 "description": defined_responses[r.status_code]})
+            else:
+                return Response({"error": defined_responses[r.status_code]})
         else:
-            return Response({"output": r.status_code})
-
+            return Response({"error": default_status_responses[round_down(r.status_code)]})
 
 
 @api_view(['PUT'])
