@@ -109,6 +109,13 @@ iframe {
     padding-right: 80px;
 }
 
+.output-row{
+    margin-top: 3px;
+    margin-bottom: 3px;
+    padding-left: 10px;
+    padding-right: 80px;
+}
+
 
 .tooltip.in{
 }

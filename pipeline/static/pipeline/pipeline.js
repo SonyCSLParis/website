@@ -75,8 +75,8 @@ function delete_pipe(pipe_id, pipeline_id, empty_pipeline_url, rest_url) {
                 // check whther deletion of this would result in no more pipes
                 if (!$(".pipe")[0]){
                     $.ajax({
-                        type: "PUT",
-                        url: rest_url+empty_pipeline_url+pipeline_id,
+                        type: "GET",
+                        url: empty_pipeline_url+pipeline_id,
                         success: function(response){
                             console.log('adding empty pipe options');
                             $('#pipeline-details').after(response);}
