@@ -27,12 +27,14 @@
                 <div class="input-group">
                   <div class="input-group-prepend">
                       <script>
-                          param_id = '{{ param.id }}';
-                          param_expression =  '{{ param.expression }}';
-                          param_value = '{{ param.value }}'
+                          param_id_{{ param.id }} = '{{ param.id }}';
+                          param_expression_{{ param.id }} =  '{{ param.expression }}';
+                          param_value_{{ param.id }} = '{{ param.value }}'
                       </script>
                       <button class="btn btn-outline-secondary"
-                              onclick="toggle_expression(param_id, param_expression, param_value)"
+                              onclick="toggle_expression(param_id_{{ param.id }},
+                                                         param_expression_{{ param.id }},
+                                                         param_value_{{ param.id }})"
                               id="expression-{{param.id}}" aria-pressed = 'false'
                               role="button"
                               type="button">$</button>

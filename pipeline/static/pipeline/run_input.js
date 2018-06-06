@@ -90,8 +90,6 @@ function run_form(pipeline_id, form_id, pipe_id, rest_url, input_url, output_url
                                    });
                     $('#output' + pipe_id).load(output_url + '/' + pipe_id);
                 });
-
-
             }
 
             function load_output(response) {
