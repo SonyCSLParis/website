@@ -1,1 +1,5 @@
+{% if param.value %}
 {{ param.value }}
+{% elif param.default %}
+{{ param.default }}
+{% endif %}

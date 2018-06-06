@@ -1,0 +1,63 @@
+li a {
+    color: green;
+}
+
+.params-container {
+}
+
+.nested{
+    margin-left: 50px;
+}
+
+.request-description{
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+
+h4 {
+    margin-top: 20px
+}
+
+.nested-marker {
+    color: #9fabb4;
+    float: left;
+}
+
+.param-name {
+    font-weight: bold;
+    text-align: justify;
+    padding-left: 20px;
+}
+
+.param-value {
+    font-style: italic;
+    padding-left: 20px;
+}
+
+
+.request_detail {
+    border-bottom: 1px solid #d1ccd4;
+    margin-bottom: 20px;
+    padding-left: 10px;
+
+}
+
+.response_params {
+    margin-left: 50px;
+}
+
+
+.response {
+    padding: 10px;
+}
+
+
+.resp-req_container {
+    border: 2px solid #d1ccd4;
+       border-radius: 7px;
+    margin-bottom: 4px;
+    min-width: 250px;
+    overflow:hidden;
+    padding: 10px;
+}

@@ -6,12 +6,19 @@ textarea.parsley-success {
   //border: 1px solid #D6E9C6;
 }
 
+div.parsley-error,
 input.parsley-error,
 select.parsley-error,
 textarea.parsley-error {
   color: #B94A48;
   background-color: #F2DEDE;
   border: 1px solid #EED3D7;
+}
+
+.form-error {
+  color: #B94A48;
+  background-color: #F2DEDE;
+  text-align: center;
 }
 
 .parsley-errors-list {

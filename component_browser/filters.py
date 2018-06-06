@@ -7,7 +7,7 @@ import itertools
 
 class ComponentFilter(django_filters.FilterSet):
     ex = django_filters. filters.CharFilter(method='filter_ex')
-    search_fields = ['component_name', 'description', 'url']
+    search_fields = ['name', 'description', 'base_path']
 
     # take a single input and search for it across all search fields
     # https://spapas.github.io/2016/09/12/django-split-query/

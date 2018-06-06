@@ -1,0 +1,13 @@
+{% if param.options %}
+    {% include 'pipeline/params/param_options.html' %}
+{% elif param.type == 'boolean' %}
+    {% include 'pipeline/params/param_boolean.html' %}
+{% elif param.type == 'number' %}
+    {% include 'pipeline/params/param_number.html' %}
+{% elif param.type == 'integer' %}
+    {% include 'pipeline/params/param_integer.html' %}
+{% elif param.type == 'array' %}
+    {% include 'pipeline/params/param_list.html' %}
+{% else %}
+    {% include 'pipeline/params/param_text.html' %}
+{% endif %}

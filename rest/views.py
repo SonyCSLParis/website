@@ -2,12 +2,16 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 import requests
 from django.core import serializers
-from browser.models import PathRequest, ComponentSpecification, Parameter, PathResponse
+from component_browser.models import PathRequest, ComponentSpecification, Parameter, PathResponse
 from pipeline.models import Pipe, Pipeline
 import json
 import datetime
 from django.db import transaction
 from core.pipeline import populate_pipes_params, get_request_params
+from django.urls import reverse
+import re
+import jmespath
+from django.http import JsonResponse
 
 param_prefix = 'param-'
 val_prefix = 'val-'
@@ -65,13 +69,52 @@ json_converter_funcs = {
 
 from collections import namedtuple
 
-NamedParam = namedtuple('NamedParam', ['name', 'id', 'type', 'value', 'converter'])
+NamedParam = namedtuple('NamedParam', ['name', 'id', 'type', 'value', 'converter', 'is_expression'])
+import objectpath
+import re
+
+eval_pattern = re.compile('>>(\d+)')
 
 
-def convert_to_format(input_dict):
+def evaluate_expression(targeted_expression, param_id, param_name, errors, target_pipe):
 
-    errors = {}
-    params = []
+    if targeted_expression[0:2] == '>>':
+
+        a = eval_pattern.match(targeted_expression)
+
+        # Always save the expression to allow for incrementally building up expresssions even if they are erroneous.
+        param = Parameter.objects.get(id=param_id)
+        param.expression = targeted_expression  # want to store exactly what the user used
+        param.save()
+
+        if not a:
+            errors[val_prefix+param_name].append('Expression error. Could not match output identifier.')
+            return '', True
+
+        output_number = a.group(1)
+        pipe = Pipe.objects.filter(pipe_line=target_pipe.pipe_line.id).get(local_id=output_number)
+        output = pipe.output
+        output = json.loads(output)
+        expression = targeted_expression.replace('>>'+output_number, 'output')
+
+        try:
+            result = jmespath.search(expression, output)
+        except jmespath.exceptions.ParseError as e:
+            errors[val_prefix + param_id].append('{}'.format(e))
+            return targeted_expression, True
+
+        return json.dumps(result), True
+
+    return targeted_expression, False
+
+
+from collections import defaultdict
+
+
+def convert_and_eval_params(input_dict, pipe):
+
+    errors = defaultdict(list)
+    params = {}
 
     local_dict = {k: v for k, v in input_dict.items()}
 
@@ -79,42 +122,56 @@ def convert_to_format(input_dict):
         if param_prefix in prefix_name:
             name, id, type = param_info.split()
             value = local_dict.get(val_prefix+name)
-            params.append(NamedParam(name, id, type, value, json_converter_funcs[type]))
+            # the type of the evaluated expression should evaluate to the specified json type
+            value, is_expression = evaluate_expression(value, id, name, errors, pipe)
+
+            params[id] = NamedParam(name, id, type, value, json_converter_funcs[type], is_expression)
 
     # now check if parameters are valid json
-    for param in params:
+    for id, param in params.items():
         value = param.value
+        param_field_id = 'val-' + id
         converter = param.converter
         try:
             converted_value = converter(value)
-
         except Exception as e:
-            errors['val-' + param.id] = 'Parameter error: {} could not be parsed as {} for parameter {}.'\
-                                  .format(value, converter, param.name)
+            if param.is_expression and param_field_id not in errors:
+                errors[param_field_id].append('Expression evaluated to a value that is not of type {}.'.format(param.type))
+            elif not param.is_expression:
+                errors[param_field_id].append('Value is not of type {}.'.format(param.type))
             break
 
-    # remove errors that are due to required parameters
-    for param in params:
+    # remove errors that are due to required parameters unless these are expressions
+    # if they are expressions we want to provide feedback on the evaluation
+    for id, param in params.items():
         param_obj = Parameter.objects.get(pk=param.id)
         is_required = convert_bool(param_obj.required)
+        is_empty = param.value == ''
         input_field_id = 'val-'+param.id
 
-        if is_required and param.value == '':
-            # The key should be the input field id. This is used to map the message to an input field to display the
-            # error message.
-            errors[input_field_id] = 'Parameter {} cannot be empty.'.format(param.name)
-        elif param.value == '':
-            # suppress any errors as val was not required so it being empty doesn't matter
-            # this wouldn't be neccesary if converters don't create an error from an empty string
-            if input_field_id in errors:
-                del errors[input_field_id]
+        if is_required and is_empty:
 
-    return params, errors
+            if param.is_expression:
+                errors[input_field_id].append('Parameter cannot be empty but expression evaluated to empty string.')
+            else:
+                # The key should be the input field id. This is used to map the message to an input field to display the
+                # error message.
+                errors[input_field_id].append('Parameter cannot be empty.')
+        elif is_empty:
+
+            if param.is_expression:
+                errors[input_field_id].append("Expression evaluated to empty string. "
+                                              "This was probably not intended though the parameter is not required.")
+            else:
+                # suppress any errors as val was not required so it being empty doesn't matter
+                # this wouldn't be neccesary if converters don't create an error from an empty string
+                if input_field_id in errors:
+                    del errors[input_field_id]
+
+    return list(params.values()), errors
 
 
-def save_parameters(pipe_id, parameters, validation_errors):
-
-    pipe_object = Pipe.objects.get(pk=pipe_id)
+def save_parameters(pipe_object, parameters, validation_errors):
 
     for param in parameters:
         param_obj = Parameter.objects.get(pk=param.id)
@@ -124,16 +181,11 @@ def save_parameters(pipe_id, parameters, validation_errors):
     now = datetime.datetime.now()
     pipe_object.input_time = now
 
-    if validation_errors:
-        pipe_object.output = format_error_output(validation_errors)
-        pipe_object.output_time = now
-    else:
+    if not validation_errors:
         pipe_object.output = ""
         pipe_object.output_time = None
-
-    pipe_object.run_time = now
-
-    pipe_object.save(force_update=True)
+        pipe_object.run_time = now
+        pipe_object.save(force_update=True)
 
 
 def format_error_output(errors):
@@ -142,72 +194,115 @@ def format_error_output(errors):
 default_status_responses = {
     200: 'Success',
     300: 'Redirect occured', # probably not appropriate for penelope?
-    400: 'Client side error at {}',
-    500: 'Server side error at {}.'
+    400: 'There is some error in the form.',
+    500: 'There was an error on the server.'
 }
 
 
 def round_down(num, divisor):
     return num - (num%divisor)
 
+
 @api_view(['PUT'])
-def external_request(request):
+def get_output(request):
     if request.method == 'PUT':
         data = json.loads(request.body)
-        pipe_id = data['pipe_id']
-        pipe = Pipe.objects.get(id=pipe_id)
-        request = pipe.request
-        responses_db = request.responses.all()
-        defined_responses = {}
 
-        for response in responses_db:
-            if response.description:
-                defined_responses[response.status_code] = response.description
+        pipe_id = data['pipe_id']
+        pipeline_id = data['pipeline_id']
+        pipe = Pipe.objects.filter(pipe_line=pipeline_id).get(local_id=pipe_id)
+        output = pipe.output
+
+        return Response({"output": output})
+
+
+def save_output(pipe_object, output):
+    now = datetime.datetime.now()
+    pipe_object.output = json.dumps(output)
+    pipe_object.output_time = now
+    pipe_object.save(force_update=True)
+
+
+def get_spec_responses(pipe):
+
+    defined_responses = {}
+
+    responses_db = pipe.request.responses.all()
+
+    for response in responses_db:
+        if response.description:
+            defined_responses[response.status_code] = response.description
+
+    return defined_responses
+
+
+def request_path(request_obj):
+    component_obj = request_obj.component
+    request_path = request_obj.path
+
+    # TODO this is a dirty hack. The request path starts with a / and concatenating it with the base path results
+    # in a double /. So we delete it
+    if request_path[0] == '/':
+        request_path = request_path[1:]
+
+    return component_obj.host + component_obj.base_path + request_path
+
+
+@api_view(['PUT'])
+def run(request):
+    if request.method == 'PUT':
+        request_data = json.loads(request.body)
+
+        rest_url = reverse('rest:rest')
+        pipe = Pipe.objects.get(pk=request_data['pipe_id'])
+        del request_data['pipe_id']
+
+        # Extract params from form and validate formats
+        source_params, validation_errors = convert_and_eval_params(request_data, pipe)
+        save_parameters(pipe, source_params, validation_errors)
+
+        if validation_errors:
+            return JsonResponse({"errors": validation_errors}, status=400)
+
+        # extract parameters for request
+        request_data = get_request_params(pipe)
+        request_obj = pipe.request
+        request_url = request_path(request_obj)
 
         headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-        # we require all external requests use https
-        r = requests.post('https://'+data['request_url'], json=data['request_data'], headers=headers)
 
-        if r.status_code in defined_responses:
+        try:
+            if request_obj.type == "POST":
+                r = requests.post('http://'+request_url, json=request_data, headers=headers)
+            elif request_obj.type == "GET":
+                r = requests.get('http://' + request_url, json=request_data, headers=headers)
+        except Exception as e:
+            return JsonResponse({"errors": {'general':
+                                                     "Could not make request to {}. "
+                                                     "Perhaps the server is down?".format(e.request.url)}},
+                                status="500")
+
+        spec_responses = get_spec_responses(pipe)
+
+        if r.status_code in spec_responses:
             if round_down(r.status_code, 100) == 200:
-                return Response({"output{}".format(pipe_id): json.loads(r.content),
-                                 "description": defined_responses[r.status_code]})
+
+                content = json.loads(r.content)
+
+                if 'html' in content:
+                    save_output(pipe, content)
+                else:
+                    save_output(pipe, {"output": content,
+                                       "description": spec_responses[r.status_code]})
+
+                return JsonResponse({"message": 'success'},
+                                    status=r.status_code)
             else:
-                return Response({"error": defined_responses[r.status_code]})
+                return JsonResponse({"errors": {"general": spec_responses[r.status_code]}},
+                                    status=r.status_code)
         else:
-            return Response({"error": default_status_responses[round_down(r.status_code)]})
-
-
-@api_view(['PUT'])
-def save_input(request):
-    if request.method == 'PUT':
-        request_data = json.loads(request.body)
-        source_params, validation_errors = convert_to_format(request_data)
-
-        # we save the input the user put in as is
-        save_parameters(request_data['pipe_id'], source_params, validation_errors)
-
-        if not validation_errors:
-            pipe = Pipe.objects.get(pk=request_data['pipe_id'])
-            request_data = get_request_params(pipe)
-
-        return Response({"request_data": request_data,
-                         "errors": validation_errors})
-
-
-@api_view(['PUT'])
-def save_output(request):
-    if request.method == 'PUT':
-        request_data = json.loads(request.body)
-        pipe_id = request_data['pipe_id']
-        pipe_object = Pipe.objects.get(pk=pipe_id)
-        del request_data['pipe_id']
-        now = datetime.datetime.now()
-        pipe_object.output = json.dumps(request_data)
-        pipe_object.output_time = now
-        pipe_object.save(force_update=True)
-
-        return Response({"data_saved": request_data})
+            return JsonResponse({"errors": {'general': default_status_responses[round_down(r.status_code, 100)]}},
+                                status=r.status_code)
 
 
 @api_view(['PUT'])
@@ -238,6 +333,7 @@ def create_pipe(request):
 
         request = PathRequest.objects.get(pk=request_id)
         parameters = request.parameters.filter(sub_param=None)
+
         # duplicate parameter from the request specification for the pipe.
         def duplicate_parameters(internal_parameters):
             for parameter in internal_parameters:
@@ -376,10 +472,12 @@ def save_component(request):
                     # we want to represent all values as json strings so we can deserialise them as objects later
                     json_val_param = json_dump_val(parameter)
                     param_instance = Parameter.objects.create(**json_val_param)
-                    inst.parameters.add(param_instance)
 
+                    # link parameter to parent param if it has one else link to response parameter
                     if parent_param:
                         parent_param.nested.add(param_instance)
+                    else:
+                        inst.parameters.add(param_instance)
 
                     if nested_params:
                         add_params(nested_params, inst, param_instance)

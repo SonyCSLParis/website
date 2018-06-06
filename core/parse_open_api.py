@@ -13,7 +13,7 @@ request_fields = ['path', 'name', 'type', 'parameters', 'description']
 component_fields = ['title', 'host', 'base_path', 'description', 'summary',
                                      'version', 'openapi_version', 'requests']
 parameter_fields = ['type', 'name', 'default', 'example', 'description',
-                    'enum', 'required', 'properties', 'items', 'in', 'maximum', 'minimum']
+                    'enum', 'required', 'properties', 'items', 'in', 'maximum', 'minimum','format']
 
 
 def parse_spec_from_dict(swagger_dict):

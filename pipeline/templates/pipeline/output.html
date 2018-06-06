@@ -5,7 +5,14 @@
     {% else %}
         <div class="col-xs-1 col-sm-1"></div>
     {% endif %}
-    <div class= "col-xs-11 col-sm-11 output">{{ pipe.output|json_from_string|safe  }}</div>
+
+    {% if pipe.output|ishtml %}
+        <div class= "col-xs-11 col-sm-11 output">
+            <iframe src="{% url 'pipeline:html_vis' pipe.id%}";></iframe>
+        </div>
+    {% else %}
+        <div class= "col-xs-11 col-sm-11 output">{{ pipe.output|json_highlight|truncatewords_html:2000|safe  }}</div>
+    {% endif %}
 </div>
 
 {% if pipe.output_time != None %}

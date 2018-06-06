@@ -1,5 +1,7 @@
 from django.template.defaulttags import register
 import json
+
+from markdown import markdown
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import get_formatter_by_name
 from pygments import highlight
@@ -8,24 +10,38 @@ import textwrap
 from picklefield.fields import PickledObjectField
 
 
-@register.filter(name='json')
-def convert_to_json(json_string):
-    response = json.dumps(json_string, indent=2)
 
-    # Get the Pygments formatter
-    formatter = get_formatter_by_name('html', style='colorful')
+@register.filter(name='html_from_json')
+def html_from_json(json_string):
+    try:
+        json_obj = json.loads(json_string)
+    except:
+        return ''
+    # TODO make json conversion as part of a pipeline the current json_from_string is for display purpose only but is
+    # confusing as it sounds general purpose
 
-    # Highlight the data
-    response = highlight(response, get_lexer_by_name('json'), formatter)
-
-    # Get the stylesheet
-    style = "<style>" + formatter.get_style_defs() + "</style><br>"
-
-    # Safe the output
-    return mark_safe(style + response)
+    html = json_obj['html']
+    return html
 
 
-@register.filter(name='json_from_string')
+@register.filter(name='ishtml')
+def ishtml(json_string):
+
+    try:
+        json_obj = json.loads(json_string)
+    except:
+        return False
+
+    return 'html' in json_obj
+
+
+@register.filter(name='json_str_str')
+def json_str_str(json_string):
+
+    return json_string.replace('"', '')
+
+
+@register.filter(name='json_highlight')
 def convert_to_json(json_string):
     try:
         json_obj = json.loads(json_string)
@@ -49,19 +65,12 @@ def convert_to_json(json_string):
 
 @register.filter(name='markdown')
 def convert_to_markdown(string):
-    response = "\n".join(textwrap.wrap(string, width=100))
+    string = "\n".join(textwrap.wrap(string, width=100))
 
-    # Get the Pygments formatter
-    formatter = get_formatter_by_name('html', style='colorful')
-
-    # Highlight the data
-    response = highlight(response, get_lexer_by_name('md'), formatter)
-
-    # Get the stylesheet
-    style = "<style>" + formatter.get_style_defs() + "</style><br>"
+    markeddown = markdown(string)
 
     # Safe the output
-    return mark_safe(style + response)
+    return mark_safe(markeddown)
 
 
 @register.filter(name='truncated_string')
@@ -112,6 +121,8 @@ def is_pickle_rick(field):
 @register.filter(name='strcat')
 def strcat(val1, val2):
   return "{}{}".format(str(val1), str(val2))
+
+
 
 @register.filter(name='request_url_cat')
 def request_url_cat(host, base_path, request_path):

@@ -18,12 +18,12 @@ from . import views
 app_name = 'rest'
 
 urlpatterns = [
-    path('', views.external_request, name='request'),
-    path('save_output', views.save_output, name='save_output'),
-    path('save_input', views.save_input, name='save_input'),
+    path('', views.get_output, name='rest'),
+    path('run', views.run, name='run'),
     path('create_pipe', views.create_pipe, name='create_pipe'),
     path('delete_pipe', views.delete_pipe, name='delete_pipe'),
     path('move_up_pipe', views.move_up_pipe, name='move_up_pipe'),
     path('move_down_pipe', views.move_down_pipe, name='delete_pipe'),
-    path('save_component', views.save_component, name='save_component')
+    path('save_component', views.save_component, name='save_component'),
+    path('get_output', views.get_output, name='get_output')
     ]

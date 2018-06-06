@@ -16,10 +16,14 @@ Including another URLconf
 from django.urls import include, path
 from django.contrib import admin
 
+app_name = 'site'
+
+
 urlpatterns = [
-    path('browser/', include('browser.urls')),
+    path('component_browser/', include('component_browser.urls')),
     path('pipeline/', include('pipeline.urls')),
     path('rest/', include('rest.urls')),
-    path('upload/', include('upload.urls')),
+    path('upload_component/', include('upload.urls')),
+    path('', include('home.urls')),
     path('admin/', admin.site.urls),
 ]

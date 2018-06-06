@@ -7,6 +7,7 @@ urlpatterns = [
     path('<str:pk>/', views.PipelineView.as_view(), name='pipeline'),
     path('output/<str:pk>', views.OutputDetailView.as_view(), name='output'),
     path('output', views.OutputDetailView.as_view(), name='output'),
+    path('html_vis/<str:pk>', views.render_html, name='html_vis'),
     path('input/<str:pk>', views.InputDetailView.as_view(), name='input'),
     path('input', views.InputDetailView.as_view(), name='input'),
     path('input_output', views.InputOutputDetailView.as_view(), name='input_output'),

@@ -4,6 +4,8 @@ from .models import Pipeline
 from django_filters.views import FilterView
 from .models import Pipe
 from core.pipeline import populate_pipe_params, populate_pipes_params
+from django.http import HttpResponse
+import json
 
 
 class PipelineView(generic.DetailView):
@@ -34,6 +36,12 @@ class OutputDetailView(generic.TemplateView):
         context = super().get_context_data(**kwargs)
         context['pipe'] = Pipe.objects.get(pk=kwargs['pk'])
         return context
+
+
+def render_html(request,  *args, **kwargs):
+    pipe = Pipe.objects.get(pk=kwargs['pk'])
+    html_obj = json.loads(pipe.output)
+    return HttpResponse(html_obj['html'])
 
 
 class InputDetailView(generic.TemplateView):

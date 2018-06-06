@@ -58,7 +58,7 @@ function add_pipe(pipe_id, pipeline_id, request_id, create_pipe_url, input_outpu
     }
 }
 
-function delete_pipe(pipe_id, rest_url, pipeline_id, empty_pipeline_url) {
+function delete_pipe(pipe_id, pipeline_id, empty_pipeline_url, rest_url) {
 
     $("#delete_pipe_" + pipe_id).click(function (e) {
         e.preventDefault();
@@ -66,7 +66,7 @@ function delete_pipe(pipe_id, rest_url, pipeline_id, empty_pipeline_url) {
         request_data['pipe_id'] = pipe_id;
         $.ajax({
             method: "PUT",
-            url: rest_url + 'delete_pipe',
+            url: rest_url+'delete_pipe',
             dataType: "json",
             dataContent: "json",
             data: JSON.stringify(request_data),
@@ -75,10 +75,10 @@ function delete_pipe(pipe_id, rest_url, pipeline_id, empty_pipeline_url) {
                 // check whther deletion of this would result in no more pipes
                 if (!$(".pipe")[0]){
                     $.ajax({
-                        type: "GET",
-                        url: empty_pipeline_url+pipeline_id,
+                        type: "PUT",
+                        url: rest_url+empty_pipeline_url+pipeline_id,
                         success: function(response){
-                            console.log('adding empty pipe options')
+                            console.log('adding empty pipe options');
                             $('#pipeline-details').after(response);}
                     });
                 }
@@ -102,7 +102,7 @@ function move_up_pipe(pipe_id, pipeline_id, rest_url) {
         console.log(request_data);
         $.ajax({
             method: "PUT",
-            url: rest_url + 'move_up_pipe',
+            url: rest_url+ 'move_up_pipe',
             dataType: "json",
             dataContent: "json",
             data: JSON.stringify(request_data),
@@ -136,7 +136,7 @@ function move_down_pipe(pipe_id, pipeline_id, rest_url) {
         console.log(request_data);
         $.ajax({
             method: "PUT",
-            url: rest_url + 'move_down_pipe',
+            url: rest_url+'move_down_pipe',
             dataType: "json",
             dataContent: "json",
             data: JSON.stringify(request_data),
@@ -155,4 +155,25 @@ function move_down_pipe(pipe_id, pipeline_id, rest_url) {
             }
         });
     });
+}
+
+function decodeHtml(html) {
+    let txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
+}
+
+function toggle_expression(id, expression, value) {
+    let param_input = document.getElementById('val-'+id);
+    let button = $('#expression-'+id);
+
+    if (button.attr("aria-pressed") === "false") {
+        param_input.value = decodeHtml(expression);
+        button.attr("aria-pressed", "true");
+        button.addClass('active');
+    } else{
+        param_input.value = decodeHtml(value);
+        button.attr("aria-pressed", "false");
+        button.removeClass('active');
+    }
 }

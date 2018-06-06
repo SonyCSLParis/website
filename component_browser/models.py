@@ -10,7 +10,7 @@ class ComponentSpecification(models.Model):
 
     name = models.CharField(max_length=200)
     description = models.TextField(max_length=200)
-    host = models.URLField()
+    host = models.TextField()
     base_path = models.TextField()
     title = models.TextField()
     version = models.TextField()
@@ -26,12 +26,14 @@ class Parameter(models.Model):
     type = models.TextField()
     nested = models.ManyToManyField('self', related_name='sub_param', symmetrical=False) #
     example = models.TextField(null=True, blank=True)
-    location = models.TextField(null=True, blank=True) # can't use 'in'
+    location = models.TextField(null=True, blank=True)  # can't use 'in'
     description = models.TextField(null=True, blank=True)
     enum = models.TextField(null=True, blank=True)
     required = models.TextField()
     default = models.TextField(null=True, blank=True)
     value = models.TextField(null=True, blank=True)
+    format = models.TextField(null=True, blank=True)
+    expression = models.TextField(null=True, blank=True)
     maximum = models.TextField(null=True, blank=True)
     minimum = models.TextField(null=True, blank=True)
 
@@ -40,11 +42,11 @@ class ParameterForm(forms.ModelForm):
 
     class Meta:
         model = Parameter
-        fields = ['name', 'type', 'example', 'description',  'enum', 'required', 'default', 'value']
+        fields = ['name', 'type', 'example', 'description',  'enum', 'required', 'default', 'value', 'expression']
 
 
 class ParameterAdmin(admin.ModelAdmin):
-    list_display = ('name', 'type', 'example', 'description', 'enum', 'required', 'default', 'value')
+    list_display = ('name', 'type', 'example', 'description', 'enum', 'required', 'default', 'value', 'expression')
     form = ParameterForm
 
 
@@ -82,7 +84,7 @@ class PathRequest(models.Model):
 
     path = models.TextField()
 
-    responses = models.ManyToManyField('browser.PathResponse', related_name='ResponseTo')
+    responses = models.ManyToManyField('component_browser.PathResponse', related_name='ResponseTo')
 
 
 class RequestForm(forms.ModelForm):
@@ -102,7 +104,7 @@ class PathResponse(models.Model):
     Models responses that might occur from making a request
     """
 
-    request = models.ForeignKey('browser.PathRequest', on_delete=models.CASCADE)
+    request = models.ForeignKey('component_browser.PathRequest', on_delete=models.CASCADE)
     status_code = models.IntegerField()
     description = models.TextField()
     parameters = models.ManyToManyField(Parameter)

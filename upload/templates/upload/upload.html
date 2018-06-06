@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
+    <div class="container">
     <h2>Upload component specification</h2>
     {% if form.errors %}
         {% for field in form %}
@@ -31,7 +32,7 @@
             </div>
             <div class="custom-file">
                 <input type="file" name="file" class="custom-file-input" id="inputGroupFile02"/>
-                <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
+                <label class="custom-file-label" for="inputGroupFile02">Choose openapi specification</label>
             </div>
             <div class="input-group-append">
 
@@ -43,10 +44,10 @@
                 //get the file name
                 var fileName = $(this).val();
                 //replace the "Choose a file" label
-                $(this).next('.custom-file-label').html(fileName);
+                $(this).next().html(fileName.replace(/C:\\fakepath\\/i, ''));
             })
         </script>
 
      </form>
-
+    </div>
 {% endblock %}

@@ -3,4 +3,7 @@ form="form{{pipe.id}}"
 name="{{"val-"|strcat:param.name}}"
 {% if param.example == 'true' %}aria-describedby="{{"example-"|strcat:param.id}}"{% endif %}
 {% if param.required == 'true' %}required{% endif %}
-
+aria-pressed = 'false'
+role="button"
+type="button"
+data-parsley-errors-container='#error-container-{{param.id}}'

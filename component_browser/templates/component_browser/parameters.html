@@ -1,0 +1,29 @@
+{% for param in parameters%}
+    <div class="params-container">
+        {% for k, v in param.items%}
+           {% if k == 'properties' %}
+               <div class="nested">
+                {% with v as parameters %}
+                   {% include "component_browser/parameters.html" %}
+                {% endwith %}
+               </div>
+           {% else %}
+                <div class="row">
+                  <div class="param-name col-xs-2 col-sm-2">{{k}}:</div>
+                  {% if k == 'example' %}
+                      <div class="param-value col-xs-10 col-sm-10 ">{{v|json_highlight}}</div>
+                  {% elif  k == 'description'%}
+                      <div class="param-value col-xs-10 col-sm-10 ">{{v|json_str_str|markdown}}</div>
+                  {% else %}
+                      <div class="param-value col-xs-10 col-sm-10 ">{{v|json_str_str}}</div>
+                  {% endif %}
+                </div>
+            {% endif %}
+
+            {% endfor %}
+            {% if forloop.last == False %}
+                <hr/>
+            {% endif %}
+    </div>
+
+{%  endfor %}

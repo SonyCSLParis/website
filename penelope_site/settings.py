@@ -63,14 +63,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'browser',
+    'component_browser',
     'rest',
     'django_tables2',
     'pipeline',
     'upload',
     'prettyjson',
     'corsheaders',
-    'rest_framework'
+    'rest_framework',
+    'home'
 ]
 
 MIDDLEWARE = [
@@ -114,7 +115,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
             'libraries': {
-                        'app_filters': 'browser.templatetags.app_filters',
+                        'app_filters': 'component_browser.templatetags.app_filters',
 
                     }
         },
@@ -175,7 +176,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static/"),
-    os.path.join(BASE_DIR, "browser/static")
+    os.path.join(BASE_DIR, "component_browser/static")
 ]
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates/'),)
 
@@ -188,3 +189,6 @@ REST_FRAMEWORK = {
     # ),
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
 }
+
+# maximum size of the the body of a response
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10000000

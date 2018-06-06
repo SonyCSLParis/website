@@ -28,21 +28,6 @@
     margin:0;
 }
 
-.requests {
-    border: 2px solid #d1ccd4;
-       border-radius: 7px;
-    margin-bottom: 4px;
-    min-width: 250px;
-    overflow:hidden;
-}
-
-.responses {
-    border: 2px solid #d1ccd4;
-       border-radius: 7px;
-    margin-bottom: 4px;
-    min-width: 250px;
-    overflow:hidden;
-}
 
 .request-type {
     border-right: 4px solid #d1ccd4;

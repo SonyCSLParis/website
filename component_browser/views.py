@@ -8,18 +8,18 @@ from django_filters.views import FilterView
 
 class ComponentDetailView(generic.DetailView):
     model = ComponentSpecification
-    template_name = 'browser/component_detail.html'
+    template_name = 'component_browser/component_detail.html'
 
 
 class RequestDetailView(generic.DetailView):
     model = PathRequest
-    template_name = 'browser/request_detail.html'
+    template_name = 'component_browser/request_detail.html'
 
     def get_context_data(self, **kwargs):
 
         context = {'request': {k: v for k, v in self.object.__dict__.items() if k != '_state'}}
-
-        def extract_param_fields(dictionary):
+        context['request']['component_name'] = self.object.component.name
+        def extract_param_fields(dictionary, filter_fields):
 
             parameters = {}
 
@@ -27,32 +27,35 @@ class RequestDetailView(generic.DetailView):
                 k = k if k != 'enum' else 'options'
                 k = k if k!= 'location' else 'in'
 
-                if k not in ['_state', 'id'] and v is not None:
+                if k not in filter_fields and v is not '' and v is not None:
                     parameters[k] = v
 
             return parameters
 
-        def extract_parameters(objects, is_nested=False):
+        def extract_parameters(objects):
 
             internal_parameters = []
 
             for obj in objects:
-
                 nested_params = obj.nested.all()
+
                 if nested_params:
-                    nested_params = extract_parameters(nested_params, True)
+                    nested_params = extract_parameters(nested_params)
 
                 param_dict = obj.__dict__
                 if nested_params:
-                    param_dict['nested'] = nested_params
+                        param_dict['properties'] = nested_params
 
-                internal_parameters.append(extract_param_fields(param_dict))
+                if param_dict.get('location', None) == '"body"':
+                    return nested_params
+                else:
+                    internal_parameters.append(extract_param_fields(param_dict, ['id', '_state']))
 
             return internal_parameters
 
         def extract_response_fields(response_dict):
 
-            return {key:value for key, value in response_dict.items() if key in ['status_code', 'description', 'parameters']}
+            return {key: value for key, value in response_dict.items() if key in ['status_code', 'description', 'parameters']}
 
         def extract_responses(objects):
 
@@ -62,7 +65,7 @@ class RequestDetailView(generic.DetailView):
 
                 response_dict = obj.__dict__
                 params = obj.parameters.all()
-                params = [extract_param_fields(obj.__dict__) for obj in params]
+                params = extract_parameters(params)
                 response_dict['parameters'] = params
                 responses.append(extract_response_fields(response_dict))
 
@@ -70,7 +73,6 @@ class RequestDetailView(generic.DetailView):
 
         context['parameters'] = extract_parameters(self.object.parameters.filter(sub_param=None))
         context['responses'] = extract_responses(self.object.responses.all())
-
         return context
 
 
@@ -94,8 +96,8 @@ class RequestDetailView(generic.DetailView):
 
 class ComponentFilterView(FilterView):
     filterset_class = ComponentFilter
-    template_name = 'browser/index.html'
-    paginate_by = 4
+    template_name = 'component_browser/index.html'
+    paginate_by = 6
 
 
 # class IndexView(generic.ListView):

@@ -1,5 +1,7 @@
 {% if param.type == 'object' %}
-    <label class='col-sm-2 col-form-label col-form-label-sm' for="{{"val-"|strcat:param.id}}" title="{{ param.description }}">{% include 'pipeline/params/param_name.html' %} </label>
+    <label class='col-sm-2 col-form-label col-form-label-sm' for="{{"val-"|strcat:param.id}}"
+           data-toggle="tooltip" data-placement="top"
+           title="{{ param.description }}">{% include 'pipeline/params/param_name.html' %} </label>
     <div class="nested_input">
         {% for param in param.nested %}
             {% include "pipeline/params/param.html" %}
@@ -8,40 +10,57 @@
 
 {% else %}
 
-    <input type='hidden' name="{{"param-"|strcat:param.name}}" value="{{param.name}} {{param.id}} {{param.type}}" form="form{{pipe.id}}"/>
+    <input type='hidden'
+           name="{{"param-"|strcat:param.name}}"
+           value="{{param.name}} {{param.id}} {{param.type}}"
+           form="form{{pipe.id}}"/>
 
     <div class="form-group row">
-        <label class='col-sm-2 col-form-label col-form-label-sm' title="{{ param.description }}"
+        <label class='col-sm-2 col-form-label col-form-label-sm tool-tip-param-description'
+               data-toggle="tooltip" data-placement="bottom"
+               title="{{ param.description }}"
                for="{{"val-"|strcat:param.id}}" >
             {% include 'pipeline/params/param_name.html' %}
         </label>
-        <div class="col-10">
-            {% if param.options %}
-                {% include 'pipeline/params/param_options.html' %}
-            {% elif param.type == 'boolean' %}
-                {% include 'pipeline/params/param_boolean.html' %}
-            {% elif param.type == 'number' %}
-                {% include 'pipeline/params/param_number.html' %}
-            {% elif param.type == 'integer' %}
-                {% include 'pipeline/params/param_integer.html' %}
-            {% elif param.type == 'array' %}
-                {% include 'pipeline/params/param_list.html' %}
+        <div class="col-sm-10">
+            {% if param.expression %}
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                      <script>
+                          param_id = '{{ param.id }}';
+                          param_expression =  '{{ param.expression }}';
+                          param_value = '{{ param.value }}'
+                      </script>
+                      <button class="btn btn-outline-secondary"
+                              onclick="toggle_expression(param_id, param_expression, param_value)"
+                              id="expression-{{param.id}}" aria-pressed = 'false'
+                              role="button"
+                              type="button">$</button>
+                  </div>
+                    {% include  'pipeline/params/param_switch_types.html' %}
+                </div>
             {% else %}
-                {% include 'pipeline/params/param_text.html' %}
+                {% include  'pipeline/params/param_switch_types.html' %}
             {% endif %}
         </div>
     </div>
+    <div class="form-group row">
+         <label class='col-sm-2'></label>
+         <div class='col-sm-10'>
+             <div id="error-container-{{param.id}}"></div>
+         </div>
+     </div>
 
-    <div class="row">
-        <div class="col-2">
-        </div>
-        <div class="col-10">
-         {% if param.options != None or param.type != 'boolean' %}
-            {% if param.example %}
-               <small class="form-text text-muted" id="{{"example-"|strcat:param.id}}">{{ param.example|strip_double_quotes }}</small>
-            {% endif %}
-         {% endif %}
-        </div>
-    </div>
+{#    <div class="row">#}
+{#        <div class="col-2">#}
+{#        </div>#}
+{#        <div class="col-10">#}
+{#         {% if param.options != None or param.type != 'boolean' %}#}
+{#            {% if param.example %}#}
+{#               <small class="form-text text-muted" id="{{"example-"|strcat:param.id}}">{{ param.example|strip_double_quotes }}</small>#}
+{#            {% endif %}#}
+{#         {% endif %}#}
+{#        </div>#}
+{#    </div>#}
 
 {% endif %}

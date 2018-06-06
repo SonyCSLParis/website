@@ -3,10 +3,11 @@ function getFormData($form){
     var indexed_array = {};
 
     $.map(unindexed_array, function(n, i){
-        indexed_array[n['name']] = $.trim(n['value']);
+        value = $.trim(n['value']);
+        indexed_array[n['name']] = value;
     });
 
-    param_existis_for_val = function(string){
+    param_exists_for_val = function(string){
         var ret = String(string);
         ret = ret.replace('val-','');
         ret = 'param-' + ret;
@@ -15,14 +16,14 @@ function getFormData($form){
     };
 
     $('input[type="checkbox"]:not(:checked)').each(function() {
-            if(param_existis_for_val(this.name)){
+            if(param_exists_for_val(this.name)){
                 indexed_array[this.name] = 'false'
             }
         }
     );
 
     $('input[type=checkbox]:checked').each(function () {
-                if(param_existis_for_val(this.name)) {
+                if(param_exists_for_val(this.name)) {
                     indexed_array[this.name] = 'true'
                 }
             }
@@ -32,7 +33,7 @@ function getFormData($form){
 }
 
 
-function run_form(form_id, pipe_id, rest_url, request_url, input_url, output_url) {
+function run_form(pipeline_id, form_id, pipe_id, rest_url, input_url, output_url) {
 
 
     $("#form"+pipe_id).parsley({trigger: "change"}).on('field:validated', function() {
@@ -42,106 +43,62 @@ function run_form(form_id, pipe_id, rest_url, request_url, input_url, output_url
     });
 
     $(document).ready(function () {
-        var $myForm = $('#'+form_id);
-        $myForm.submit(function (event) {
-            event.preventDefault();
+            var $myForm = $('#' + form_id);
+            $myForm.submit(function (event) {
+                event.preventDefault();
 
-            $myForm.parsley().validate();
-
-            if ($myForm.parsley().isValid()) {
-
-                var formData = getFormData($(this));
-                console.log('input pipe id ' + pipe_id);
-                console.log(JSON.stringify(formData));
-                $.ajax({
-                    // using put here so we can get the body of the
-                    // request. Some middleware is removing the data from post requests.
-                    method: "PUT",
-                    url: rest_url + 'save_input',
-                    dataType: "json",
-                    dataContent: "json",
-                    data: JSON.stringify(formData),
-                    success: make_request,
-                    error: server_side_error
-                });
-            }
-        });
-
-        function server_side_error (errors) {
-                                console.log('server side validation error');
-                                console.log(errors);
-                                Object.keys(errors).forEach(function(key) {
-                                    $('#'+key).parsley().addError('error-1', { message: errors[key] });
-                                });
-                            }
-
-        function isEmpty(ob){
-            for(var i in ob){
-                return false;
-            }
-            return true;
-        }
-
-        function make_request(data) {
-
-            var errors = data['errors'];
-            console.log(errors);
-            if (!isEmpty(errors)) {
-
-                server_side_error(errors); // manually trigger callback
-                return;
+                try {
+                    $myForm.parsley().validate();
+                }
+                catch (e) {
+                    console.log('form validation error' + e)
                 }
 
-            console.log('saved input');
-            data['request_url'] = request_url;
-            data['pipe_id'] = pipe_id;
-            console.log('making request to ' + request_url);
-            $('#input'+pipe_id).load(input_url + '/' + pipe_id);
+                if ($myForm.parsley().isValid()) {
+                    let formData = getFormData($(this));
 
-            $.ajax({
-                    // using put here so we can get the body of the
-                    // request. Some middleware
-                    method: "PUT",
-                    url: rest_url,
-                    dataType: "json",
-                    dataContent:"json",
-                    data:JSON.stringify(data),
-                    success: handleRequestSuccess,
-                    error: handleRequestFailure
+                    $.ajax({
+                        // using put here so we can get the body of the
+                        // request. Some middleware is removing the data from post requests.
+                        method: "PUT",
+                        url: rest_url + 'run',
+                        dataType: "json",
+                        dataContent: "json",
+                        data: JSON.stringify(formData),
+                        success: load_output,
+                        error: run_error
                     });
+                }
+            });
 
-            function handleRequestSuccess(response){
+            function run_error(json) {
+                console.log('server side validation error');
+                console.log(json.responseJSON);
+                let errors = json.responseJSON['errors'];
 
-                console.log('request success');
-                response['pipe_id'] = pipe_id;
-                $.ajax({
-                      // using put here so we can get the body of the
-                      // request. Some middleware
-                      method: "PUT",
-                      url: rest_url+'save_output',
-                      dataType: "json",
-                      dataContent:"json",
-                      data:JSON.stringify(response),
-                      success: handle_output_save_success,
-                      error: handle_output_save_failure
+                $('#input' + pipe_id).load(input_url + '/' + pipe_id, function(){
+                    // only load form errors after refreshing input or they will be overwritten
+                    Object.keys(errors).forEach(function (key) {
+                                       if(key === 'general'){
+                                           $('.invalid-form-error-message-'+pipe_id)
+                                               .html(errors[key])
+                                               .toggleClass('filled', true);
+                                       } else {
+                                           // join messages in order
+                                           $('#' + key).parsley().addError('error-1', {message: errors[key].join("<br />")});
+                                       }
+                                   });
+                    $('#output' + pipe_id).load(output_url + '/' + pipe_id);
                 });
 
-                function handle_output_save_success(data){
-                    console.log('saved output');
-                    $('#output'+pipe_id).load(output_url + '/' + pipe_id);
-                    console.log('updated html')
-                }
-
-                function handle_output_save_failure(response){
-                    console.log('request failure');
-                }
 
             }
 
-            function handleRequestFailure(response){
-                console.log('request failure');
-                console.log(response);
-           }
+            function load_output(response) {
+
+                $('#input' + pipe_id).load(input_url + '/' + pipe_id);
+                $('#output' + pipe_id).load(output_url + '/' + pipe_id);
+            }
         }
-    })
+    )
 }
