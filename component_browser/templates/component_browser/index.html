@@ -3,36 +3,41 @@
 {% load app_filters %}
 
 {% block content %}
+        <link rel="stylesheet" type="text/css" href="{% static 'component_browser/index.css' %}" />
 
-    <div class="container">
-        <form action="" method="get">
-            <div class="form-group">
-                    <input type="text" name="ex" class="form-control" placeholder="search components ...">
-            </div>
-        </form>
+        <div class='component_search'>
+            <form action="" method="get">
+                <div class="form-group">
+                        <input type="text" name="ex" class="form-control" placeholder="search components ...">
+                </div>
+            </form>
+        </div>
 
         <div class="row">
             {% for spec in object_list %}
-                <div class="col-lg-4 col-sm-6 col-xs-12">
-                   <h1><a href="{% url 'component_browser:component' spec.pk %}">{{spec.name}}</a></h1>
-                   <p>{{ spec.description|markdown}}</p>
-                   {% for request in spec.request_set.all %}
-                       <div class="request grid-container">
-                           <div class="grid-item request-type {{ request.type }}">{{ request.type }}</div>
-                           <div class="grid-item request-name">{{ request.name }}</div>
-                       </div>
-                   {% endfor %}
-               </div>
+                <a class='browser-link' href="{% url 'component_browser:component' spec.pk %}">
+                    <div class="col-lg-4  outer">
+                       <h1>{{spec.name}}</h1>
+                       <p>{{ spec.description|markdown}}</p>
+                       {% for request in spec.request_set.all %}
+                           <div class="request grid-container">
+                               <div class="grid-item request-type {{ request.type }}">{{ request.type }}</div>
+                               <div class="grid-item request-name">{{ request.name }}</div>
+                           </div>
+                       {% endfor %}
+                   </div>
+                </a>
             {% if forloop.counter|divisibleby:3 %}
-        </div>
-        <div class="row">
+                </div>
+                <div class="row">
             {% endif %}
+
             {% endfor %}
-        </div>
+            </div>
 
 
         {% if is_paginated %}
-                <nav aria-label="component browser navigation">
+                <nav class="nav-pagination" aria-label="component browser navigation">
                      <ul class="pagination justify-content-center">
                        {% if page_obj.has_previous %}
                          <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
@@ -59,7 +64,6 @@
                 </nav>
         {% endif %}
 
-    </div>
 
 
 {% endblock %}

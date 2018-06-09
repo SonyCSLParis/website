@@ -5,26 +5,26 @@
 {% block content %}
 
     <link rel="stylesheet" type="text/css" href="{% static 'component_browser/detailed.css' %}" />
-    <div class="container">
-       <h1>{{object.name}}</h1>
-       <p>{{ object.description|linebreaksbr|markdown}}</p>
-       <p>{{ object.url}}</p>
-       {% for request in object.pathrequest_set.all %}
-           <div class="request grid-container">
-                {% comment %}
-                <div class="grid-item request-type {{ request.type }}">
-                    <a href="{% url 'browser:request' request.pk %}">{{ request.type }}</a>
-                </div>
-               {% endcomment %}
-               <div class="request_detail">
-                    <div class="grid-item request-name">
-                        <a href="{% url 'component_browser:request' request.pk %}">{{ request.name }}</a>
-                    </div>
-                    {% if request.description %}
-                        <div class="grid-item request-description">{{ request.description|truncated_string:500|markdown }}</div>
-                   {% endif %}
-              </div>
+
+   <h1>{{object.name}}</h1>
+   <p>{{ object.description|linebreaksbr|markdown}}</p>
+   <p>{{ object.url}}</p>
+   {% for request in object.pathrequest_set.all %}
+       <div class="request grid-container">
+            {% comment %}
+            <div class="grid-item request-type {{ request.type }}">
+                <a href="{% url 'browser:request' request.pk %}">{{ request.type }}</a>
             </div>
-       {% endfor %}
-   </div>
+           {% endcomment %}
+           <div class="request_detail">
+                <div class="grid-item request-name">
+                    <a href="{% url 'component_browser:request' request.pk %}">{{ request.name }}</a>
+                </div>
+                {% if request.description %}
+                    <div class="grid-item request-description">{{ request.description|truncated_string:500|markdown }}</div>
+               {% endif %}
+          </div>
+        </div>
+   {% endfor %}
+
 {% endblock %}

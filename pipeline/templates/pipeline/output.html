@@ -1,7 +1,11 @@
 {% load app_filters %}
 <div class="row output-row">
     {% if pipe.output != '' %}
-        <div class="col-xs-1 col-sm-1">output[{{ pipe.local_id }}]</div>
+        <div class="col-xs-1 col-sm-1 display: table; ">
+            <div class="out-text">
+                >>{{ pipe.local_id }}
+            </div>
+        </div>
     {% else %}
         <div class="col-xs-1 col-sm-1"></div>
     {% endif %}

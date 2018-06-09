@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'pipeline/new_pipe.css' %}" />
+
+<h1>Create pipeline</h1>
+
+{{ form.media }}
+<div class="form-container">
+    <form id="new-pipeline-form" method="POST">
+        {% csrf_token %}
+        {{ form }}
+    </form>
+
+    <input class='btn btn-outline-secondary create-pipe-button' type='submit' value='Create Pipe' form="new-pipeline-form"/>
+</div>
+
+
+
+{%  endblock %}

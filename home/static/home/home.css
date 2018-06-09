@@ -1,0 +1,45 @@
+.home-menu {
+    text-align: center;
+    margin-top: 100px;
+    margin-bottom: 100px;
+}
+
+.outer{
+    width:42%;
+    height:400px;
+    margin:40px;
+    border:1px solid #393939;
+    float: left;
+    color: #ddd8db;
+    background-color: #ababab;
+    transition: background-color 0.5s ease;
+    border-radius: 30px;
+    background: linear-gradient(45deg, #848083, #adaab1);
+  }
+
+a.home-link {
+    text-decoration: none;
+    color:inherit;
+}
+
+a:hover{
+    color:inherit;
+}
+.inner {
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+.inner > h1 > a {
+    color: #cecece;
+}
+
+
+.outer:hover {
+    background: linear-gradient(45deg, #a6a1a5, #b6b3ba);
+    color: #ffffff;
+
+}

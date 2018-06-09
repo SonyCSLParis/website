@@ -8,41 +8,39 @@
 
     <link rel="stylesheet" type="text/css" href="{% static 'component_browser/detailed.css' %}" />
 
-    <div class="container">
+    {% comment %}
+    <div class="grid-item request-type {{ request.type }}">{{ request.type }}</div>
+    {% endcomment %}
 
-        {% comment %}
-        <div class="grid-item request-type {{ request.type }}">{{ request.type }}</div>
-        {% endcomment %}
+    <h2><a href="{% url 'component_browser:component' request.component_id %}">{{ request.component_name}}</a> > {{ request.name }}</h2>
+    {% if request.description %}
+        <div class="request-description">{{ request.description|linebreaksbr|markdown }}</div>
+    {% endif %}
 
-        <h2><a href="{% url 'component_browser:component' request.component_id %}">{{ request.component_name}}</a> > {{ request.name }}</h2>
-        {% if request.description %}
-            <div class="request-description">{{ request.description|linebreaksbr|markdown }}</div>
-        {% endif %}
-
-        <h3>Input parameters:</h3>
-        <div class="resp-req_container">
-            {% include 'component_browser/parameters.html' %}
-        </div>
-        
-        <h4>Responses:</h4>
-        <div class="resp-req_container">
-            {% for response in responses%}
-                <h2> {{ response.status_code }}</h2>
-                <div class="response">
-                    <div class="grid-item request-description">{{ response.description|linebreaksbr|markdown }}</div>
-                    {% if response.parameters %}
-                        <h3>Output:</h3>
-                            {% with response.parameters as parameters %}
-                                {% include 'component_browser/parameters.html' %}
-                        {% endwith %}
-                    {% endif %}
-                </div>
-                {% if forloop.last == False %}
-                       <hr/>
-                {% endif %}
-            {% endfor %}
-
-        </div>
+    <h3>Input parameters:</h3>
+    <div class="resp-req_container">
+        {% include 'component_browser/parameters.html' %}
     </div>
+
+    <h4>Responses:</h4>
+    <div class="resp-req_container">
+        {% for response in responses%}
+            <h2> {{ response.status_code }}</h2>
+            <div class="response">
+                <div class="grid-item request-description">{{ response.description|linebreaksbr|markdown }}</div>
+                {% if response.parameters %}
+                    <h3>Output:</h3>
+                        {% with response.parameters as parameters %}
+                            {% include 'component_browser/parameters.html' %}
+                    {% endwith %}
+                {% endif %}
+            </div>
+            {% if forloop.last == False %}
+                   <hr/>
+            {% endif %}
+        {% endfor %}
+
+        </div>
+
 
 {% endblock %}

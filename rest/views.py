@@ -284,22 +284,26 @@ def run(request):
 
         spec_responses = get_spec_responses(pipe)
 
-        if r.status_code in spec_responses:
+        try:
+            content = json.loads(r.content)
+        except Exception as e:
+            content = None
+
+        is_defined_in_spec = r.status_code in spec_responses
+
+        if is_defined_in_spec and content:
             if round_down(r.status_code, 100) == 200:
-
-                content = json.loads(r.content)
-
                 if 'html' in content:
                     save_output(pipe, content)
                 else:
                     save_output(pipe, {"output": content,
                                        "description": spec_responses[r.status_code]})
 
-                return JsonResponse({"message": 'success'},
+                return JsonResponse({"output": content,
+                                     "description": spec_responses[r.status_code]},
                                     status=r.status_code)
-            else:
-                return JsonResponse({"errors": {"general": spec_responses[r.status_code]}},
-                                    status=r.status_code)
+        if content:
+            return JsonResponse(content, status=r.status_code)
         else:
             return JsonResponse({"errors": {'general': default_status_responses[round_down(r.status_code, 100)]}},
                                 status=r.status_code)
@@ -504,5 +508,5 @@ def save_component(request):
             add_params(request_params, request_inst) # add params to request
             add_responses(request_responses, request_inst) # add responses to request
 
-        return Response({"message": "success"})
+        return JsonResponse({"component_id": component.pk})
 

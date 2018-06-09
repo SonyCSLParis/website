@@ -3,10 +3,49 @@ from .filters import PipelineFilter
 from .models import Pipeline
 from django_filters.views import FilterView
 from .models import Pipe
+from django.http import HttpResponseRedirect
 from core.pipeline import populate_pipe_params, populate_pipes_params
 from django.http import HttpResponse
 import json
+from . import forms
+from django.urls import reverse
 
+class PipelineFormView(generic.FormView):
+
+    template_name = 'pipeline/new_pipeline.html'
+    form_class = forms.PipelineForm
+    success_url = '/thanks/'
+
+    def form_valid(self, form):
+        # This method is called when valid form data has been POSTed.
+        # It should return an HttpResponse.
+
+        if form.is_valid():
+            requests = form.cleaned_data['requests']
+            del form.cleaned_data['requests']
+            obj = Pipeline(**form.cleaned_data)
+            obj.save()
+
+            for request in requests:
+                obj.requests.add(request)
+            obj.save()
+
+            return HttpResponseRedirect(reverse('pipeline:pipeline',
+                                                kwargs={'pk': obj.pk}
+                                                )
+                                        )
+        else:
+            return True
+
+        return super().form_valid(form)
+
+
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+
+        return context
 
 class PipelineView(generic.DetailView):
     model = Pipeline
@@ -26,7 +65,7 @@ class PipelineView(generic.DetailView):
 class PipelinesFilterView(FilterView):
     filterset_class = PipelineFilter
     template_name = 'pipeline/index.html'
-    paginate_by = 4
+    paginate_by = 6
 
 
 class OutputDetailView(generic.TemplateView):

@@ -24,8 +24,13 @@ def upload_file(request):
 
             if not form.errors:
                 form.spec_dict['name'] = request.POST['name']
-                r = requests.put(url=url, json=form.spec_dict)
-                return render(request, 'upload/success.html', {'form': form})
+                response = requests.put(url=url, json=form.spec_dict)
+                response_json = json.loads(response.content)
+
+                return HttpResponseRedirect(reverse('component_browser:component',
+                                                    kwargs={'pk': response_json['component_id']}
+                                                    )
+                                            )
             else:
                 return JsonResponse({
                     'success': False,

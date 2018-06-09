@@ -3,7 +3,8 @@ from . import views
 app_name = 'pipeline'
 
 urlpatterns = [
-    path('', views.PipelinesFilterView.as_view(), name='pipelines_index'),
+    path('', views.PipelinesFilterView.as_view(), name='index'),
+    path('create_pipeline/', views.PipelineFormView.as_view(), name='create_pipeline'),
     path('<str:pk>/', views.PipelineView.as_view(), name='pipeline'),
     path('output/<str:pk>', views.OutputDetailView.as_view(), name='output'),
     path('output', views.OutputDetailView.as_view(), name='output'),

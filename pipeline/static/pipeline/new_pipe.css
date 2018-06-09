@@ -1,0 +1,60 @@
+.selector-chosen select#id_requests_to {
+    height: 370px;
+}
+
+.selector-available select#id_requests_from {
+    height: 310px;
+    margin-top: 20px;
+}
+
+
+.form-container .selector .selector-filter {
+    border: none;
+    margin-bottom: 10px;
+    height: 30px;
+    font-size:20px;
+}
+
+
+.form-container  .selector .filter select {
+    margin-top: 20px;
+}
+
+
+.selector .selector-chosen .help-icon{
+    display: none;
+}
+
+.selector .selector-available .help-icon{
+    display: none;
+}
+
+.selector {
+    margin-top: 30px;
+}
+
+.selector h2{
+    font-size:20px;
+}
+
+.selector  select{
+    font-weight: normal;
+    font-size:15px;
+}
+
+textarea{
+    display:block;
+    width:450px;
+}
+
+.create-pipe-button {
+    clear: both;
+    display: list-item;
+    text-align: center;
+    margin: auto;
+}
+
+.form-container {
+    width: 80%;
+    margin: 0 auto;
+}

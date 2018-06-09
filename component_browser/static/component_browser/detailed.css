@@ -61,3 +61,7 @@ h4 {
     overflow:hidden;
     padding: 10px;
 }
+
+.footer {
+    bottom: unset;
+}

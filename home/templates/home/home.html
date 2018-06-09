@@ -3,13 +3,40 @@
 {% load app_filters %}
 
 {% block content %}
+    <link rel="stylesheet" type="text/css" href="{% static 'home/home.css' %}" />
 
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-4 col-sm-6 col-xs-12">
-               <h1><a href="{% url 'component_browser:index' %}">Browser</a></h1>
+    <div class="home-menu">
+        <a class="home-link" href="{% url 'component_browser:index' %}">
+            <div class="outer">
+                <div class="inner">
+                  <h1>Component <br/> Browser</h1>
+                </div>
            </div>
-        </div>
+        </a>
+        <a class="home-link" href="{% url 'pipeline:index' %}">
+            <div class="outer">
+                <div class="inner">
+
+                    <h1>Pipeline <br/> Browser</h1>
+                </div>
+           </div>
+        </a>
+
+        <a class="home-link" href="{% url 'upload:upload_component' %}">
+               <div class="outer">
+                   <div class="inner">
+                     <h1>Upload <br/> Component</h1>
+                   </div>
+              </div>
+           </a>
+           <a class="home-link" href="{% url 'pipeline:create_pipeline' %}">
+               <div class="outer">
+                   <div class="inner">
+                       <h1>Create <br/> Pipeline</h1>
+                   </div>
+              </div>
+           </a>
     </div>
+
 
 {% endblock %}

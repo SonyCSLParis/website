@@ -55,7 +55,7 @@ class PathRequest(models.Model):
     Models a request made to a web service
     """
     def __str__(self):
-        return '{} {}'.format(self.type, self.name)
+        return '{}/{}'.format(self.component.name, self.name)
 
     component = models.ForeignKey(ComponentSpecification, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)

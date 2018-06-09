@@ -1,0 +1,43 @@
+.component_search{
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+.page-item > .page-link{
+  color: #6b6b6b;
+  border: 1px solid #6c757d;;
+
+}
+
+.page-item.active > .page-link{
+  background: #6c757d;
+  color: #fff;
+}
+
+.nav-pagination {
+  margin-top: 50px;
+}
+
+.outer {
+    transition: background-color 0.5s ease;
+    background: rgba(255, 255, 255, 0.92);
+    border-color: #6c757d;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    cursor:pointer;
+}
+
+a.browser-link {
+    text-decoration: none;
+    color:inherit;
+}
+
+a:hover{
+    color:inherit;
+}
+
+.outer:hover {
+    background: #e6e6e6;
+    color: #ffffff;
+}

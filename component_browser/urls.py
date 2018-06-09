@@ -8,3 +8,4 @@ urlpatterns = [
     path('<str:pk>/', views.ComponentDetailView.as_view(), name='component'),
     path('request/<str:pk>/', views.RequestDetailView.as_view(), name='request'),
 ]
+
