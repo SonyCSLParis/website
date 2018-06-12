@@ -4,15 +4,15 @@
 <div class="btn-group" role="group" aria-label="Toolbar with button groups">
     <div class="move-up-pipe">
           <button type='button' id="move_up_pipe_{{ pipe.id }}" class="btn btn-outline-secondary">&#652;</button>
-          <script> move_up_pipe({{ pipe.id }}, {{ pipeline.id }}, '{% url 'rest:rest' %}') </script>
+          <script> move_up_pipe({{ pipe.id }}) </script>
      </div>
     <div class="move-down-pipe">
           <button type='button' id="move_down_pipe_{{ pipe.id }}" class="btn btn-outline-secondary">v</button>
-          <script> move_down_pipe({{ pipe.id }}, {{ pipeline.id }}, '{% url 'rest:rest' %}') </script>
+          <script> move_down_pipe({{ pipe.id }}) </script>
      </div>
     <div class="delete_pipe">
           <button type='button' id="delete_pipe_{{ pipe.id }}" class="btn btn-outline-secondary">-</button>
-          <script> delete_pipe({{ pipe.id }}, {{ pipeline.id }}, '{% url 'pipeline:empty_pipeline' %}', '{% url 'rest:rest' %}') </script>
+          <script> delete_pipe({{ pipe.id }}) </script>
      </div>
     <div class="btn-group" role="group">
         <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle"
@@ -22,9 +22,7 @@
             {% for request in pipeline.requests.all %}
                 <a class ="dropdown-item" href="#" id='add-after-{{pipe.id}}-{{ request.id }}'>{{ request.name}}</a>
                 <script>
-                      var create_pipe_url = '{% url 'rest:create_pipe' %}';
-                      var get_input_output_url = '{% url 'pipeline:input_output' %}';
-                      add_pipe({{ pipe.id }}, {{ pipeline.id }}, {{ request.id }}, create_pipe_url, get_input_output_url)
+                      add_pipe({{ pipe.id }}, {{ request.id }})
                 </script>
             {% endfor %}
         </div>

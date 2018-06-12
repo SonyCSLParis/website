@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from component_browser.models import PathRequest, Parameter
 from django.contrib import admin
@@ -16,6 +17,7 @@ class Pipeline(models.Model):
     requests = models.ManyToManyField(PathRequest, related_name="multiple", blank=True)
     # used to assign pipes a number local to the pipeline. New pipes are given id_gen + 1 and id_gen is incremented.
     local_id_gen = models.IntegerField(default=0)
+    owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
 
 
 class PipelineForm(forms.ModelForm):
@@ -26,7 +28,7 @@ class PipelineForm(forms.ModelForm):
 
 
 class PipelineAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'id')
+    list_display = ('name', 'description', 'id', 'owner')
     form = PipelineForm
 
 
@@ -39,6 +41,7 @@ class Pipe(models.Model):
     output_time = models.DateTimeField(null=True, blank=True)  # time at which output was acquired
     position = models.IntegerField()  # position in list of pipes used for ordering on page
     local_id = models.IntegerField()  # the id for the pipe local to the pipeline
+    owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
 
     parameters = models.ManyToManyField(Parameter, related_name="has_params", blank=True)
 

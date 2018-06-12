@@ -5,7 +5,7 @@ from .models import Pipeline
 
 
 class PipelineFilter(django_filters.FilterSet):
-    ex = django_filters. filters.CharFilter(method='filter_ex')
+    ex = django_filters.filters.CharFilter(method='filter_ex')
     search_fields = ['name', 'description']
 
     # take a single input and search for it across all search fields

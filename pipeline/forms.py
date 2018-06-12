@@ -6,20 +6,22 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 
 class PipelineForm(forms.Form):
 
-    requests = forms.ModelMultipleChoiceField(queryset=models.PathRequest.objects.all(),
-                                             label=(''),
-                                             widget=FilteredSelectMultiple(
-                                                 ('Requests'),
-                                                 False,
-                                             ))
     name = forms.CharField()
     description = forms.CharField()
 
+
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user")
         super(PipelineForm, self).__init__(*args, **kwargs)
+
         self.fields['name'].widget.attrs['class'] = 'form-control'
         self.fields['description'].widget.attrs['class'] = 'form-control'
-
+        self.fields['requests'] = forms.ModelMultipleChoiceField(queryset=models.PathRequest.objects.filter(owner=user),
+                                                  label=(''),
+                                                  widget=FilteredSelectMultiple(
+                                                      ('Requests'),
+                                                      False,
+                                                  ))
     class Media:
         css = {
             'all': ('admin/css/widgets.css',),

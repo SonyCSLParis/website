@@ -1,15 +1,5 @@
 {% load staticfiles %}
 
-<script type="text/javascript" src="{% static 'jquery-3.3.1.js' %}"></script>
-<script type="text/javascript" src="{% static 'tether.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'popper.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'bootstrap.min.js' %}"></script>
-<link rel="stylesheet" type="text/css" href="{% static 'bootstrap.css' %}" />
-
-
-{# Make sure to load our css after bootstrap to enable overriding. #}
-<link rel="stylesheet" type="text/css" href="{% static 'common.css' %}" />
-
 <header>
  <!-- Fixed navbar -->
  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark navbar-default">
@@ -24,11 +14,33 @@
        </li>
      </ul>
    </div>
+   <div class="login-logout-nav">
+     {% if user.is_authenticated %}
+        <p> Logged in as {{ user.username }} / </p> <a href="{% url 'logout' %}">Logout?</a>
+      {% else %}
+         <a href="{% url 'login' %}">login</a> <p>/</p> <a href="{% url 'accounts:signup' %}">signup</a>
+      {% endif %}
+   </div>
  </nav>
 </header>
 
 <body>
     <div class="container">
+
+
+        <script type="text/javascript" src="{% static 'jquery-3.3.1.js' %}"></script>
+        <script type="text/javascript" src="{% static 'tether.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'popper.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'bootstrap.js' %}"></script>
+
+
+        {# Make sure to load our css after bootstrap to enable overriding. #}
+        <link rel="stylesheet" type="text/css" href="{% static 'common.css' %}" />
+        <link rel="stylesheet" type="text/css" href="{% static 'accounts.css' %}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.css' %}" />
+
+
     {% block content %}
 
     {% endblock %}

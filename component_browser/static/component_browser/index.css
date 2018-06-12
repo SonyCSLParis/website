@@ -26,6 +26,10 @@
     -moz-border-radius: 10px;
     border-radius: 10px;
     cursor:pointer;
+    height: 25%;
+    width: 25%;
+    overflow:auto;
+
 }
 
 a.browser-link {

@@ -14,7 +14,7 @@
         </div>
 
         <div class="row">
-            {% for spec in object_list %}
+            {% for spec in specifications %}
                 <a class='browser-link' href="{% url 'component_browser:component' spec.pk %}">
                     <div class="col-lg-4  outer">
                        <h1>{{spec.name}}</h1>

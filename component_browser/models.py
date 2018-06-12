@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.contrib import admin
 from django import forms
@@ -9,12 +10,13 @@ class ComponentSpecification(models.Model):
         return self.name
 
     name = models.CharField(max_length=200)
-    description = models.TextField(max_length=200)
+    description = models.TextField()
     host = models.TextField()
     base_path = models.TextField()
     title = models.TextField()
     version = models.TextField()
     openapi_version = models.TextField()
+    owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
 
 
 class Parameter(models.Model):
@@ -42,11 +44,11 @@ class ParameterForm(forms.ModelForm):
 
     class Meta:
         model = Parameter
-        fields = ['name', 'type', 'example', 'description',  'enum', 'required', 'default', 'value', 'expression']
+        fields = ['name', 'type', 'example', 'description',  'enum', 'required', 'default', 'value', 'expression', 'format']
 
 
 class ParameterAdmin(admin.ModelAdmin):
-    list_display = ('name', 'type', 'example', 'description', 'enum', 'required', 'default', 'value', 'expression')
+    list_display = ('name', 'type', 'example', 'description', 'enum', 'required', 'default', 'value', 'expression', 'format')
     form = ParameterForm
 
 
@@ -61,6 +63,8 @@ class PathRequest(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     summary = models.TextField(blank=True, null=True)
+    owner = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
+
 
     REQUEST_TYPES = (
         ("GET", 'GET'),
@@ -91,11 +95,11 @@ class RequestForm(forms.ModelForm):
 
     class Meta:
         model = PathRequest
-        fields = ['component', 'name', 'description', 'type', 'parameters', 'path']
+        fields = ['component', 'name', 'description', 'type', 'parameters', 'path', 'owner']
 
 
 class RequestAdmin(admin.ModelAdmin):
-    list_display = ('component', 'name', 'description', 'type', 'path')
+    list_display = ('component', 'name', 'description', 'type', 'path', 'owner')
     form = RequestForm
 
 

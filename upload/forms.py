@@ -10,7 +10,6 @@ class UploadFileForm(forms.Form):
     file = forms.FileField()
     name = forms.TextInput()
 
-
     def is_valid(self):
         # run the parent validation first
         valid = super(UploadFileForm, self).is_valid()

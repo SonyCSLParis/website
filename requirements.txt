@@ -14,3 +14,5 @@ pyopenssl
 objectpath
 jmespath
 Markdown
+django-better-filter-widget
+django-datetime-widget

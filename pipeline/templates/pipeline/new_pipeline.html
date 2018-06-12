@@ -5,18 +5,26 @@
 
 <link rel="stylesheet" type="text/css" href="{% static 'pipeline/new_pipe.css' %}" />
 
-<h1>Create pipeline</h1>
+{% if has_requests %}
 
-{{ form.media }}
-<div class="form-container">
-    <form id="new-pipeline-form" method="POST">
-        {% csrf_token %}
-        {{ form }}
-    </form>
+    <h1>Create pipeline</h1>
 
-    <input class='btn btn-outline-secondary create-pipe-button' type='submit' value='Create Pipe' form="new-pipeline-form"/>
-</div>
+    {{ form.media }}
+    <div class="form-container">
+        <form id="new-pipeline-form" method="POST">
+            {% csrf_token %}
+            {{ form }}
+        </form>
+        <input class='btn btn-outline-secondary create-pipe-button' type='submit' value='Create Pipe' form="new-pipeline-form"/>
+    </div>
 
+{% else %}
 
+    <div class="no-requests-available">
+        <p>There are no requests associated with your account. Please upload a component with requests that can
+        be used by a pipeline.</p>
+    </div>
+
+{% endif %}
 
 {%  endblock %}

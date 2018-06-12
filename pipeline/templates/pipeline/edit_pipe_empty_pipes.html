@@ -9,9 +9,7 @@
         {% for request in pipeline.requests.all %}
             <a class ="dropdown-item" href="#" id='add-after-empty-{{request.id}}'>{{ request.name}}</a>
             <script>
-                  var create_pipe_url = '{% url 'rest:create_pipe' %}';
-                  var get_input_output_url = '{% url 'pipeline:input_output' %}';
-                  add_pipe('empty', {{ pipeline.id }}, {{ request.id }}, create_pipe_url, get_input_output_url)
+                  add_pipe('empty', {{ request.id }})
             </script>
         {% endfor %}
     </div>

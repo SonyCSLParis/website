@@ -1,21 +1,31 @@
 .home-menu {
     text-align: center;
-    margin-top: 100px;
-    margin-bottom: 100px;
+    margin-top: 50px;
+    margin-bottom: 50px;
 }
 
 .outer{
     width:42%;
     height:400px;
-    margin:40px;
+    margin:20px;
     border:1px solid #393939;
     float: left;
-    color: #ddd8db;
-    background-color: #ababab;
+    color: #e9e4e7;
     transition: background-color 0.5s ease;
-    border-radius: 30px;
-    background: linear-gradient(45deg, #848083, #adaab1);
+    border-radius: 20px;
+    background-color: #707e85;
+    position: relative;
+    text-align: center;
+
   }
+
+h1 {
+    font-size: 0.3em;
+}
+
+img{
+    height: 100%; width: 100%; object-fit: contain
+}
 
 a.home-link {
     text-decoration: none;
@@ -26,20 +36,20 @@ a:hover{
     color:inherit;
 }
 .inner {
-  position: relative;
-  top: 50%;
-  -webkit-transform: translateY(-50%);
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 5em;
 }
 
 .inner > h1 > a {
-    color: #cecece;
+    color: #a4b4bf;
 }
 
 
 .outer:hover {
-    background: linear-gradient(45deg, #a6a1a5, #b6b3ba);
+    background-color: #83939e;
     color: #ffffff;
 
 }

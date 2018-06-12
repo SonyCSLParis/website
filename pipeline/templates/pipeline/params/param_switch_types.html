@@ -8,6 +8,10 @@
     {% include 'pipeline/params/param_integer.html' %}
 {% elif param.type == 'array' %}
     {% include 'pipeline/params/param_list.html' %}
-{% else %}
-    {% include 'pipeline/params/param_text.html' %}
+{% elif param.type == 'string' %}
+    {% if param.format == 'date-time' %}
+        {% include 'pipeline/params/param_date_time.html' %}
+    {% else %}
+        {% include 'pipeline/params/param_text.html' %}
+    {% endif %}
 {% endif %}

@@ -18,7 +18,7 @@
   margin-top: 50px;
 }
 
-.outer {
+.row > .outer {
     transition: background-color 0.5s ease;
     background: rgba(255, 255, 255, 0.92);
     border-color: #6c757d;
@@ -26,6 +26,10 @@
     -moz-border-radius: 10px;
     border-radius: 10px;
     cursor:pointer;
+    height: 25%;
+    width: 25%;
+    padding: 15px;
+    overflow:auto;
 }
 
 a.browser-link {

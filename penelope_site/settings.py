@@ -71,7 +71,9 @@ INSTALLED_APPS = [
     'prettyjson',
     'corsheaders',
     'rest_framework',
-    'home'
+    'home',
+    'accounts',
+    'datetimewidget'
 ]
 
 MIDDLEWARE = [
@@ -187,8 +189,15 @@ REST_FRAMEWORK = {
     # 'DEFAULT_PARSER_CLASSES': (
     #     'rest_framework.parsers.JSONParser',
     # ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+            'rest_framework.authentication.BasicAuthentication',
+            'rest_framework.authentication.SessionAuthentication',
+        ),
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
 }
 
 # maximum size of the the body of a response
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10000000
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'

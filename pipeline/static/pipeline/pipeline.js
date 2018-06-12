@@ -1,4 +1,4 @@
-function add_pipe(pipe_id, pipeline_id, request_id, create_pipe_url, input_output_url) {
+function add_pipe(pipe_id, request_id) {
 
     $('#add-after-'+pipe_id+'-'+request_id).click(function (e) {
         console.log('jquery called');
@@ -7,13 +7,12 @@ function add_pipe(pipe_id, pipeline_id, request_id, create_pipe_url, input_outpu
 
         console.log('clicked on ' + 'add-pipe-{{pipe.id}}');
         var request_data = {'pipe_id': pipe_id,
-                            'pipeline_id': pipeline_id,
                             'request_id':request_id
                             };
 
         $.ajax({
             method: "PUT",
-            url: create_pipe_url,
+            url: 'create_pipe',
             dataType: "json",
             dataContent: "json",
             data: JSON.stringify(request_data),
@@ -38,7 +37,7 @@ function add_pipe(pipe_id, pipeline_id, request_id, create_pipe_url, input_outpu
         console.log(new_pipe_id);
         $.ajax({
             type: "GET",
-            url: input_output_url + '/'+ pipeline_id +'/' + new_pipe_id,
+            url: 'input_output/' + new_pipe_id,
             success: handle_fetched_new_pipe_success
         });
     }
@@ -58,7 +57,7 @@ function add_pipe(pipe_id, pipeline_id, request_id, create_pipe_url, input_outpu
     }
 }
 
-function delete_pipe(pipe_id, pipeline_id, empty_pipeline_url, rest_url) {
+function delete_pipe(pipe_id) {
 
     $("#delete_pipe_" + pipe_id).click(function (e) {
         e.preventDefault();
@@ -66,7 +65,7 @@ function delete_pipe(pipe_id, pipeline_id, empty_pipeline_url, rest_url) {
         request_data['pipe_id'] = pipe_id;
         $.ajax({
             method: "PUT",
-            url: rest_url+'delete_pipe',
+            url: 'delete_pipe',
             dataType: "json",
             dataContent: "json",
             data: JSON.stringify(request_data),
@@ -76,7 +75,7 @@ function delete_pipe(pipe_id, pipeline_id, empty_pipeline_url, rest_url) {
                 if (!$(".pipe")[0]){
                     $.ajax({
                         type: "GET",
-                        url: empty_pipeline_url+pipeline_id,
+                        url: 'empty_pipe',
                         success: function(response){
                             console.log('adding empty pipe options');
                             $('#pipeline-details').after(response);}
@@ -91,18 +90,17 @@ function delete_pipe(pipe_id, pipeline_id, empty_pipeline_url, rest_url) {
 }
 
 
-function move_up_pipe(pipe_id, pipeline_id, rest_url) {
+function move_up_pipe(pipe_id) {
 
     $("#move_up_pipe_" + pipe_id).click(function (e) {
         e.preventDefault();
         var request_data = {};
         request_data['pipe_id'] = pipe_id;
-        request_data['pipeline_id'] = pipeline_id;
         console.log('moving up pipe ' + pipe_id);
         console.log(request_data);
         $.ajax({
             method: "PUT",
-            url: rest_url+ 'move_up_pipe',
+            url: 'move_up_pipe',
             dataType: "json",
             dataContent: "json",
             data: JSON.stringify(request_data),
@@ -125,18 +123,17 @@ function move_up_pipe(pipe_id, pipeline_id, rest_url) {
 }
 
 
-function move_down_pipe(pipe_id, pipeline_id, rest_url) {
+function move_down_pipe(pipe_id) {
 
     $("#move_down_pipe_" + pipe_id).click(function (e) {
         e.preventDefault();
         var request_data = {};
         request_data['pipe_id'] = pipe_id;
-        request_data['pipeline_id'] = pipeline_id;
         console.log('moving up pipe ' + pipe_id);
         console.log(request_data);
         $.ajax({
             method: "PUT",
-            url: rest_url+'move_down_pipe',
+            url: 'move_down_pipe',
             dataType: "json",
             dataContent: "json",
             data: JSON.stringify(request_data),

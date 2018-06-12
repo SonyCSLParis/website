@@ -33,7 +33,7 @@ function getFormData($form){
 }
 
 
-function run_form(pipeline_id, form_id, pipe_id, rest_url, input_url, output_url) {
+function run_form(form_id, pipe_id) {
 
 
     $("#form"+pipe_id).parsley({trigger: "change"}).on('field:validated', function() {
@@ -61,7 +61,7 @@ function run_form(pipeline_id, form_id, pipe_id, rest_url, input_url, output_url
                         // using put here so we can get the body of the
                         // request. Some middleware is removing the data from post requests.
                         method: "PUT",
-                        url: rest_url + 'run',
+                        url: 'run',
                         dataType: "json",
                         dataContent: "json",
                         data: JSON.stringify(formData),
@@ -76,7 +76,7 @@ function run_form(pipeline_id, form_id, pipe_id, rest_url, input_url, output_url
                 console.log(json.responseJSON);
                 let errors = json.responseJSON['errors'];
 
-                $('#input' + pipe_id).load(input_url + '/' + pipe_id, function(){
+                $('#input' + pipe_id).load('input/' + pipe_id, function(){
                     // only load form errors after refreshing input or they will be overwritten
                     Object.keys(errors).forEach(function (key) {
                                        if(key === 'general'){
@@ -88,14 +88,14 @@ function run_form(pipeline_id, form_id, pipe_id, rest_url, input_url, output_url
                                            $('#' + key).parsley().addError('error-1', {message: errors[key].join("<br />")});
                                        }
                                    });
-                    $('#output' + pipe_id).load(output_url + '/' + pipe_id);
+                    $('#output' + pipe_id).load('output/' + pipe_id);
                 });
             }
 
             function load_output(response) {
 
-                $('#input' + pipe_id).load(input_url + '/' + pipe_id);
-                $('#output' + pipe_id).load(output_url + '/' + pipe_id);
+                $('#input' + pipe_id).load('input/' + pipe_id);
+                $('#output' + pipe_id).load('output/' + pipe_id);
             }
         }
     )

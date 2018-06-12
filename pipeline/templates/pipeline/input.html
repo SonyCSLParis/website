@@ -12,10 +12,6 @@
             <script>
                      var form_id = {{'form'|strcat:pipe.id|js}};
                      var pipe_id = {{pipe.id|js}};
-                     var pipeline_id = {{pipe.pipe_line_id|js}};
-                     var rest_url = '{% url 'rest:rest' %}';
-                     input_url = '{% url 'pipeline:input' %}';
-                     output_url = '{% url 'pipeline:output' %}';
                      $(function () {
                        $('[data-toggle="tooltip"]').tooltip()
                      })
@@ -31,7 +27,7 @@
                 <input type='hidden' name="pipe_id" value="{{ pipe.id }}" />
                 <div class="form-error invalid-form-error-message-{{pipe.id}}"></div>
                 <script>
-                        run_form(pipeline_id, form_id, pipe_id, rest_url, input_url, output_url)
+                        run_form(form_id, pipe_id)
                 </script>
                 <button class="btn btn-outline-secondary run-button" name="run" type="submit" value="run">run</button>
             </form>

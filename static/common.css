@@ -10,7 +10,31 @@
 /*}*/
 
 a {
-    color: #6c757d;
+    color: #7f8890;
+}
+
+a:hover {
+    color: #61666e;
+}
+
+.signup {
+    float: none;
+    width: 30%;
+    margin: 50px auto 0;
+}
+
+.signup H2 {
+    text-align: left;
+}
+
+.login {
+    float: none;
+    width: 30%;
+    margin: 50px auto 0;
+}
+
+.login H2 {
+    text-align: left;
 }
 
 

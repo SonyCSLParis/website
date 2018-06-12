@@ -99,6 +99,13 @@ class ComponentFilterView(FilterView):
     template_name = 'component_browser/index.html'
     paginate_by = 6
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        if user.is_authenticated:
+            context['specifications'] = ComponentSpecification.objects.filter(owner=user)
+
+        return context
 
 # class IndexView(generic.ListView):
 #     template_name = 'browser/index.html'
