@@ -1,6 +1,9 @@
 <div class="form-group">
     <div class="input-group date" id="datetimepicker-{{ param.id }}" data-target-input="nearest">
-        <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker-{{ param.id }}"/>
+        <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker-{{ param.id }}"
+                {% include 'pipeline/params/param_meta.html' %}
+                value="{{ param.value }}"
+        />
         <div class="input-group-append" data-target="#datetimepicker-{{ param.id }}" data-toggle="datetimepicker">
             <div class="input-group-text"><i class="fa fa-calendar"></i></div>
         </div>
@@ -8,7 +11,9 @@
 
     <script type="text/javascript">
         $(function () {
-            $('#datetimepicker-{{ param.id }}').datetimepicker();
+            $('#datetimepicker-{{ param.id }}').datetimepicker({
+                'format': moment.HTML5_FMT.DATETIME_LOCAL_MS
+            });
         });
     </script>
 </div>

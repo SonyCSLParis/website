@@ -99,12 +99,12 @@ class OutputDetailView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['pipe'] = Pipe.objects.get(pk=kwargs['pk'])
+        context['pipe'] = Pipe.objects.get(pk=kwargs['pipe_pk'])
         return context
 
 
 def render_html(request,  *args, **kwargs):
-    pipe = Pipe.objects.get(pk=kwargs['pk'])
+    pipe = Pipe.objects.get(pk=kwargs['pipe_pk'])
     html_obj = json.loads(pipe.output)
     return HttpResponse(html_obj['html'])
 
@@ -114,7 +114,7 @@ class InputDetailView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        pipe = Pipe.objects.get(pk=kwargs['pk'])
+        pipe = Pipe.objects.get(pk=kwargs['pipe_pk'])
 
         context['pipe'] = populate_pipe_params(pipe)
         return context
@@ -364,7 +364,6 @@ def run(request, pk):
     if request.method == 'PUT':
         request_data = json.loads(request.body)
 
-        rest_url = reverse('rest:rest')
         pipe = Pipe.objects.get(pk=request_data['pipe_id'])
         del request_data['pipe_id']
 
@@ -407,14 +406,13 @@ def run(request, pk):
                 if 'html' in content:
                     save_output(pipe, content)
                 else:
-                    save_output(pipe, {"output": content,
-                                       "description": spec_responses[r.status_code]})
+                    save_output(pipe, {"output": content})
 
-                return JsonResponse({"output": content,
-                                     "description": spec_responses[r.status_code]},
+                return JsonResponse({"output": content},
                                     status=r.status_code)
-        if content:
-            return JsonResponse(content, status=r.status_code)
+        if content is not None:
+            save_output(pipe, {"output": content})
+            return JsonResponse({"output": content}, status=r.status_code)
         else:
             return JsonResponse({"errors": {'general': default_status_responses[round_down(r.status_code, 100)]}},
                                 status=r.status_code)

@@ -37,13 +37,13 @@ function run_form(form_id, pipe_id) {
 
 
     $("#form"+pipe_id).parsley({trigger: "change"}).on('field:validated', function() {
-            var ok = $('.parsley-error').length === 0;
+            let ok = $('.parsley-error').length === 0;
             $('.bs-callout-info').toggleClass('hidden', !ok);
             $('.bs-callout-warning').toggleClass('hidden', ok);
     });
 
     $(document).ready(function () {
-            var $myForm = $('#' + form_id);
+            let $myForm = $('#' + form_id);
             $myForm.submit(function (event) {
                 event.preventDefault();
 

@@ -1,7 +1,7 @@
 js2py
 Django
 pytz
-django-filters
+django-filter
 django-tables2
 Pygments
 django-prettyjson
